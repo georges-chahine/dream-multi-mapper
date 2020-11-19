@@ -1,0 +1,21 @@
+---
+gpsTopic: "/vectornav/GPS_INS"
+base_link: "base_link"
+tfTopic: "/tf"
+imuTopic: "/vectornav/IMU"
+RTK: "True"
+rtkTopic: "/tcpfix"
+ptCloudTopic: "/rslidar_points"
+semantics: "True"
+semanticPtCloudTopic: "/rslidar_points"
+sourceBags:
+- "/mnt/storage/Backpack_Dataset/Bags/lake_bPearl/200804_Scooter/10_kph_semantics_compressed/"
+- "/mnt/storage/Backpack_Dataset/Bags/lake_bPearl/200804_Scooter/25_kph_semantics_compressed/"
+mapRegistration: "gps"
+radius: "25"
+voxelSize: "0.05"
+pathOut: "/run/user/1000/gvfs/sftp:host=tale.georgiatech-metz.fr,user=georges/home/georges/mapperOutput/"
+Coordinates:
+- "49.105249"
+- "6.216053"
+
