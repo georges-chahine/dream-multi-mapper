@@ -515,6 +515,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             {
                 pcl::PointCloud<pcl::PointXYZRGBL> temp2_cloud;
                 pcl::copyPointCloud (temp_cloud, temp2_cloud);
+                temp_cloud.points.clear();
+                temp_cloud.points.shrink_to_fit();
+
                 pcContainer.XYZRGBL.push_back(temp2_cloud);
 
                 for (size_t i = 0; i < temp_cloud.points.size(); i++) {
@@ -522,9 +525,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     //    std::uint8_t r = (rgb >> 16) & 0x0000ff;
                     //    std::uint8_t g = (rgb >> 8)  & 0x0000ff;
                     //    std::uint8_t b = (rgb)       & 0x0000ff;
-                    int r=int(temp_cloud.points[i].r);
-                    int g= int(temp_cloud.points[i].g);
-                    int b= int(temp_cloud.points[i].b);
+                    int r=int(temp2_cloud.points[i].r);
+                    int g= int(temp2_cloud.points[i].g);
+                    int b= int(temp2_cloud.points[i].b);
                     //       std::cout<<"current color0 is "<<r<<" "<<g<<" "<<b<< std::endl;
                     pcContainer.XYZRGBL.back().points[i].label = checkPointLabel(r,g,b);
                 }
@@ -813,7 +816,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
             std::cout<<std::endl;
 
-            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_aware_icp_local exit"<<std::endl;
+            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_aware_icp_local all exit"<<std::endl;
 
             std::cout<<std::endl;
 
@@ -825,27 +828,30 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             std::cout<<std::endl;
 
 
-            if  (selection=="exit"){break;}
 
-            if  (selection=="gps_global"){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", leafSize );
+
+            if  (selection=="gps_global" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
             }
 
-            if (selection=="gps_local"){
+            if (selection=="gps_local" || selection=="all" ){
                 Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "gps_local", leafSize );
             }
 
-            if  (selection=="rtk_global"){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", leafSize );
+            if  (selection=="rtk_global" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", 2*leafSize );
             }
 
-            if (selection=="rtk_local"){
+            if (selection=="rtk_local" || selection=="all" ){
                 Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
             }
 
 
-            if (selection=="icp_local"){
+            if (selection=="icp_local" || selection=="all" ){
             }
+
+            if  (selection=="exit" || selection=="all" ){break;}
+
             if (selection=="semantic_aware_icp_local"){}
 
 
