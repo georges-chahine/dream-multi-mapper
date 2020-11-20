@@ -114,7 +114,7 @@ void GPS::createMap(std::string currentPath,Eigen::Matrix4f imu2base,Eigen::Matr
 
     std::cout<<"Saving "<<pointCloud->points.size()<<" points"<<std::endl;
     pcl::io::savePCDFileASCII (fullPath1, *pointCloud);
-    // pcl::io::savePLYFileASCII (fullPath2, *pointCloud);
+    pcl::io::savePLYFileASCII (fullPath2, *pointCloud);
 
 
 }
