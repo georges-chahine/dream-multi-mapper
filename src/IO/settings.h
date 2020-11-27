@@ -9,5 +9,6 @@ extern std::vector<std::vector<int>> palette;
 
 extern std::vector<std::string> labels;
 
+extern std::vector<float> semanticWeights;
 
 }

@@ -35,8 +35,8 @@ std::vector<std::string> labels { "Ground",
                                                "Build",
                                                "Pole",
                                                "Traffic sign",
-                                               "Vegetation",
-                                               "Terrain",
+                                               "Vegetation",   //9
+                                               "Terrain",      //10
                                                "Sky",
                                                "Person",
                                                "Rider",
@@ -48,6 +48,28 @@ std::vector<std::string> labels { "Ground",
                                                "Bicycle",
                                                "Labelless",
                                                "Other"};
+
+std::vector<float> semanticWeights  { 0.0,
+                                      0.5,
+                                      1.0,
+                                      0.5,
+                                      1.,
+                                      1.,
+                                      0.5,
+                                      1.0,
+                                      1.0,   //vegetation
+                                      1.,   //terrain
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.,
+                                      0.25,
+                                      0.};
 
 
 }

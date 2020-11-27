@@ -1,0 +1,55 @@
+- BoundingBoxDataPointsFilter:
+    xMin: -1
+    xMax: 1
+    yMin: -1
+    yMax: 1
+    zMin: -1
+    zMax: 2
+    removeInside: 1
+
+- CutAtDescriptorThresholdDataPointsFilter:
+    descName: semanticWeights
+    useLargerThan: 0
+    threshold: 0.01
+
+- RandomSamplingDataPointsFilter:
+    prob: 0.8
+
+## - OctreeGridDataPointsFilter:
+##     maxSizeByNode: 0.3
+
+## - SurfaceCovarianceDataPointsFilter:
+##     knn: 100
+##     epsilon: 1.33
+##     keepDensities: 1
+
+## - DecomposeCovarianceDataPointsFilter:
+##     keepNormals: 1
+
+- FixStepSamplingDataPointsFilter:
+      startStep: 2
+
+- SurfaceNormalDataPointsFilter:
+      knn: 15
+      epsilon: 1.3
+      keepNormals: 1
+      keepDensities: 1
+      keepEigenValues: 1
+      keepEigenVectors: 1
+      sortEigen: 1
+
+- MaxDensityDataPointsFilter:
+      maxDensity: 10  #100
+
+#- ShadowDataPointsFilter:
+#      eps: 0.2 ##0.4
+
+- SimpleSensorNoiseDataPointsFilter:
+    sensorType: 0
+#    angleThreshold: 80
+
+- ObservationDirectionDataPointsFilter
+
+- OrientNormalsDataPointsFilter:
+      towardCenter: 1
+

@@ -1,6 +1,7 @@
 #include "IO/IO.h"
 #include "IO/settings.h"
 #include "Registration/gps.h"
+#include "Registration/icp.h"
 
 
 namespace mapper
@@ -44,7 +45,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
     unsigned int rangeIndex=0;
     bool init=false;
     double x_0=gpsData.vect[0][1]; double y_0=gpsData.vect[0][2]; double z_0=gpsData.vect[0][3];
-    for (int i=0; i<gpsData.vect.size(); i++)
+    for (unsigned int i=0; i<gpsData.vect.size(); i++)
 
     {
         double x=gpsData.vect[i][1]; double y=gpsData.vect[i][2]; double z=gpsData.vect[i][3];
@@ -141,24 +142,24 @@ void IO::interpolateRefRange(Datacontainer& ref, Datacontainer& input, Dataconta
     std::vector<double> xData, yData;
     double x;
     //bool extrapolate=false;
-    for (int i=0; i<ref.vect.size(); i++){
+    for (unsigned int i=0; i<ref.vect.size(); i++){
         double refTime=ref.vect[i][0];
 
         // std::cout<<"refTime is" <<refTime<<std::endl;
         xData.push_back(refTime);
     }
-    for (int i=0; i<input.vect.size(); i++){
+    for (unsigned int i=0; i<input.vect.size(); i++){
         double inputTime=input.vect[i][0];
         yData.push_back(inputTime);
 
     }
     std::vector<double> t(ref.vect.size(),999);
 
-    for (int i=0; i<ref.vect.size(); i++){
+    for (unsigned int i=0; i<ref.vect.size(); i++){
 
         x=ref.vect[i][0];
         //output.vect[i][0]=interpolate(xData,yData,x,extrapolate);
-        for (int m=0; m<yData.size(); m++){
+        for (unsigned int m=0; m<yData.size(); m++){
 
             if (m==0 && yData[m]>=x){
                 output.vect[i][0]=yData[m];
@@ -190,7 +191,7 @@ void IO::interpolateRefRange(Datacontainer& ref, Datacontainer& input, Dataconta
         int lowerBound, upperBound;
         bool errorFlag1=true;
         bool errorFlag2=true;
-        for (int k=0; k<yData.size(); k++){
+        for (unsigned int k=0; k<yData.size(); k++){
             if (yData[k]==*lower){
                 lowerBound=k;
                 errorFlag1=false;
@@ -234,7 +235,7 @@ void IO::interpolateRefRange(Datacontainer& ref, Datacontainer& input, Dataconta
         {
             //   std::cout<<"same as lower"<<std::endl;
         }
-        for (int j=1; j<input.vect[0].size(); j++){
+        for (unsigned int j=1; j<input.vect[0].size(); j++){
             output.vect[i][j]=input.vect[lowerBound][j]+t[i]*(input.vect[upperBound][j]-input.vect[lowerBound][j]);
         }
     }
@@ -259,10 +260,10 @@ void IO::matchDataToPointCloudRate(std::vector<double>& timestamp , Datacontaine
     std::vector<int> indices;
 
 
-    for (int i=0; i<timestamp.size();i++)
+    for (unsigned int i=0; i<timestamp.size();i++)
     {   int lastMinIdx=0;
         double lastMinVal=9999;
-        for (int j=0; j<input.vect.size();j++)
+        for (unsigned int j=0; j<input.vect.size();j++)
         {
             // std::cout.precision(17);
             //  std::cout<<input.vect[j][0]<<std::endl;
@@ -291,7 +292,7 @@ void IO::timeDataFilter(Datacontainer& dataContainer, std::vector<std::vector<do
 
     output.frame_id= dataContainer.frame_id;
     output.header=dataContainer.header;
-    for (int i=0; i<dataContainer.vect.size(); i++ )
+    for (unsigned int i=0; i<dataContainer.vect.size(); i++ )
     {
         if (dataContainer.vect[i][0]>lowerTh &&  dataContainer.vect[i][0]<upperTh){
             output.vect.push_back(dataContainer.vect[i]);
@@ -299,7 +300,6 @@ void IO::timeDataFilter(Datacontainer& dataContainer, std::vector<std::vector<do
         }
     }
 }
-
 
 void IO::timeDataFilter(pCloudcontainer& pcContainer, std::vector<std::vector<double>>& timeRange, pCloudcontainer& output)
 {
@@ -309,25 +309,26 @@ void IO::timeDataFilter(pCloudcontainer& pcContainer, std::vector<std::vector<do
     double upperTh=Th[1];
     std::cout<<"lower th is "<<lowerTh<<" upper th is "<<upperTh<<std::endl;
     output.frame_id= pcContainer.frame_id;
-    for (int i=0; i<pcContainer.XYZRGBL.size(); i++ )
+    for (unsigned int i=0; i<pcContainer.XYZRGBL.size(); i++ )
     {
         if (pcContainer.timestamp[i]>lowerTh &&  pcContainer.timestamp[i]<upperTh){
             output.XYZRGBL.push_back(pcContainer.XYZRGBL[i]);
             output.timestamp.push_back(pcContainer.timestamp[i]);
+            output.normals.push_back(pcContainer.normals[i]);
 
         }
     }
 
 }
 
-Eigen::Matrix4f IO::parseTFcontainer(TFcontainer& container, std::string& sensor_frame, std::string& base_link)
+Eigen::Matrix4d IO::parseTFcontainer(TFcontainer& container, std::string& sensor_frame, std::string& base_link)
 {
 
-    for (int i=0; i<container.frame_id.size(); i++)
+    for (unsigned int i=0; i<container.frame_id.size(); i++)
     {
         //   std::cout<<"child_frame_id is "<<container.child_frame_id[i]<<" sensor frame is "<<sensor_frame<<" base_link is "<<base_link<<std::endl;
         if (sensor_frame==base_link){
-            return Eigen::Matrix4f::Identity();
+            return Eigen::Matrix4d::Identity();
         }
 
         if ((container.child_frame_id[i]==sensor_frame) && (container.frame_id[i]==base_link))
@@ -338,7 +339,7 @@ Eigen::Matrix4f IO::parseTFcontainer(TFcontainer& container, std::string& sensor
         if ((container.child_frame_id[i]==sensor_frame) && (container.frame_id[i]!=base_link))
         {
             std::string temp_frame_id=container.frame_id[i];
-            Eigen::Matrix4f temp_transform=container.transform[i];
+            Eigen::Matrix4d temp_transform=container.transform[i];
 
             while (temp_frame_id!=base_link)
             {
@@ -350,7 +351,7 @@ Eigen::Matrix4f IO::parseTFcontainer(TFcontainer& container, std::string& sensor
 
                 //   std::cout<<"temp_frame_id is "<<temp_frame_id<<" child_frame_id is "<<container.child_frame_id[i]<<" base_link is "<<base_link<<std::endl;
                 // temp_frame_id=container.frame_id[i];
-                for (int j=0; j<container.frame_id.size(); j++)
+                for (unsigned int j=0; j<container.frame_id.size(); j++)
                 {
 
                     if ((container.child_frame_id[j]==temp_frame_id)){
@@ -363,7 +364,7 @@ Eigen::Matrix4f IO::parseTFcontainer(TFcontainer& container, std::string& sensor
                 {
 
                     std::cout<<"ERROR: error finding transform from "<<sensor_frame<<" to "<<base_link<<" , assuming Identity"<<std::endl;
-                    return Eigen::Matrix4f::Identity();
+                    return Eigen::Matrix4d::Identity();
 
                 }
             }
@@ -371,7 +372,7 @@ Eigen::Matrix4f IO::parseTFcontainer(TFcontainer& container, std::string& sensor
         }
     }
     std::cout<<"ERROR: could not find transform from "<<sensor_frame<<" to "<<base_link<<" , (no link found to parent frame), assuming Identity"<<std::endl;
-    return Eigen::Matrix4f::Identity();
+    return Eigen::Matrix4d::Identity();
 }
 
 //bool IO::compareFunction (std::string a, std::string b) {return a<b;}
@@ -381,7 +382,7 @@ std::uint32_t IO::checkPointLabel(int& r, int& g, int& b)
 {
     std::vector<int> current_color{r, g, b};
     //std::cout<<"current color1 is "<<r<<" "<<g<<" "<<b<< std::endl;
-    for (int i=0; i<palette.size(); i++)
+    for (unsigned int i=0; i<palette.size(); i++)
     {
 
         if (current_color==palette[i]) {
@@ -402,10 +403,10 @@ std::uint32_t IO::checkPointLabel(int& r, int& g, int& b)
 
     //std::cout<<"r "<<(r)<<" g"<<(g)<<" b "<<(b)<<std::endl;
     //}
-    return 0;
+    //return 0;
 }
 
-void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize)
+void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic)
 {
     stringvec v;
     read_directory(sourceBags, v);
@@ -415,7 +416,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     //   std::cout<<"now sorted"<<std::endl;
     //std::copy(v.begin(), v.end(),std::ostream_iterator<std::string>(std::cout, "\n"));
     std::vector<std::string> filteredPath;
-    for (int i=0; i<v.size(); i++)
+    for (unsigned int i=0; i<v.size(); i++)
     {
         // unsigned int dotPosition=	v[i].find_last_of('.');
         //if v[i][dotPosition]
@@ -435,7 +436,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
     // bool whofirst1=false, whofirst2=false;
     std::cout <<"Loading Bags... "<<std::endl;
-    for (int i=0; i<filteredPath.size(); i++){
+    for (unsigned int i=0; i<filteredPath.size(); i++){
         std::cout <<"Loading "<<i+1<< " out of "<<filteredPath.size()<<" bags"<<std::endl;
         std::string fullPath=sourceBags+"/"+filteredPath[i];
         std::cout <<fullPath<<std::endl;
@@ -501,26 +502,69 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         }
         if (m.getTopic() == topics[1])
         {
-            sensor_msgs::PointCloud2::ConstPtr pc2 = m.instantiate<sensor_msgs::PointCloud2>();
-            pcContainer.timestamp.push_back(pc2->header.stamp.toSec());
-            pcContainer.frame_id=pc2->header.frame_id;
+            sensor_msgs::PointCloud2::ConstPtr pc0 = m.instantiate<sensor_msgs::PointCloud2>();
+            pcl::PCLPointCloud2::Ptr pc2 (new pcl::PCLPointCloud2 ());
+            pcl_conversions::toPCL(*pc0,*pc2);
 
-            pcl::PCLPointCloud2 pcl_pc2;
-            pcl_conversions::toPCL(*pc2,pcl_pc2);
-            pcl::PointCloud<pcl::PointXYZRGBA> temp_cloud;
-            pcl::fromPCLPointCloud2(pcl_pc2,temp_cloud);
+            // pcl::PCLPointCloud2::Ptr cloud_filtered (new pcl::PCLPointCloud2 ());
+            pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+            sor.setInputCloud (pc2);
+            sor.setMinimumPointsNumberPerVoxel(2);
+            sor.setLeafSize (leafSize, leafSize, leafSize);
+            sor.filter (*pc2);
+
+
+
+            pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor2;
+            sor2.setInputCloud (pc2);
+            sor2.setMeanK (5);
+            sor2.setStddevMulThresh (1.0);
+            sor2.filter (*pc2);
+
+
+
+            std::vector<int> indices;
+
+
+            pcContainer.timestamp.push_back(pc0->header.stamp.toSec());
+            pcContainer.frame_id=pc0->header.frame_id;
+
+            //pcl::PCLPointCloud2 pcl_pc2;
+
+
+            pcl::PointCloud<pcl::PointXYZRGBA>::Ptr temp_cloud (new pcl::PointCloud<pcl::PointXYZRGBA>);
+            pcl::fromPCLPointCloud2(*pc2,*temp_cloud);
+            pcl::removeNaNFromPointCloud(*temp_cloud, *temp_cloud, indices);
+
+
+            pcl::NormalEstimationOMP<pcl::PointXYZRGBA, pcl::Normal> ne;
+            ne.setInputCloud (temp_cloud);
+            // Create an empty kdtree representation, and pass it to the normal estimation object.
+            // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+            pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBA> ());
+            ne.setSearchMethod (tree);
+
+            // Output datasets
+            pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+            // Use all neighbors in a sphere of radius 3cm
+            ne.setRadiusSearch (0.2);
+
+            // Compute the features
+            ne.compute (*cloud_normals);
+
+            pc2=NULL;
 
 
             if (semantics)
             {
                 pcl::PointCloud<pcl::PointXYZRGBL> temp2_cloud;
-                pcl::copyPointCloud (temp_cloud, temp2_cloud);
-                temp_cloud.points.clear();
-                temp_cloud.points.shrink_to_fit();
+                pcl::copyPointCloud (*temp_cloud, temp2_cloud);
+
 
                 pcContainer.XYZRGBL.push_back(temp2_cloud);
 
-                for (size_t i = 0; i < temp_cloud.points.size(); i++) {
+                for (size_t i = 0; i < temp_cloud->points.size(); i++) {
                     //  std::uint32_t rgb = *reinterpret_cast<int*>(&temp_cloud.points[i].rgb);
                     //    std::uint8_t r = (rgb >> 16) & 0x0000ff;
                     //    std::uint8_t g = (rgb >> 8)  & 0x0000ff;
@@ -530,14 +574,23 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     int b= int(temp2_cloud.points[i].b);
                     //       std::cout<<"current color0 is "<<r<<" "<<g<<" "<<b<< std::endl;
                     pcContainer.XYZRGBL.back().points[i].label = checkPointLabel(r,g,b);
-                }
+
+                    //std::cout<<"IO STAT0 "<<checkPointLabel(r,g,b)<<std::endl;
+                    //std::cout<<"IO STAT1"<<pcContainer.XYZRGBL[0].points[1].label<<std: :endl;
+                }  //.cast<std::uint32_t>()
+                //   std::cout<<pcContainer.XYZRGBL[0].getMatrixXfMap(7,8,0).row(6).cast<std::uint32_t>()<<std::endl;
+                //  std::cout<<"IO label0 "<<pcContainer.XYZRGBL[0].points[0].label<<std::endl;
+                // std::cout<<"IO label1 "<<pcContainer.XYZRGBL[0].points[1].label<<std::endl;
             }
             else
             {
                 pcl::PointCloud<pcl::PointXYZRGBL> temp2_cloud;
-                pcl::copyPointCloud (temp_cloud, temp2_cloud);
+                pcl::copyPointCloud (*temp_cloud, temp2_cloud);
                 pcContainer.XYZRGBL.push_back(temp2_cloud);
             }
+            temp_cloud->points.clear();
+            temp_cloud->points.shrink_to_fit();
+            pcContainer.normals.push_back(*cloud_normals);
             //    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
             //    pcl::fromPCLPointCloud2(pcl_pc2,*temp_cloud);
 
@@ -609,18 +662,20 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                     std::vector<double> translation {( tf->transforms[0].transform.translation.x ),  ( tf->transforms[0].transform.translation.y ), ( tf->transforms[0].transform.translation.z )};
 
-                    Eigen::Quaternion<float> rotation;
+                    Eigen::Quaternion<double> rotation;
                     rotation.x()=( tf->transforms[0].transform.rotation.x );
                     rotation.y()=( tf->transforms[0].transform.rotation.y );
                     rotation.z()=( tf->transforms[0].transform.rotation.z );
                     rotation.w()=( tf->transforms[0].transform.rotation.w );
-                    Eigen::Matrix3f rotM=rotation.toRotationMatrix();
-                    Eigen::Matrix4f transform= Eigen::Matrix4f::Identity();
+                    Eigen::Matrix3d rotM=rotation.toRotationMatrix();
+                    Eigen::Matrix4d transform= Eigen::Matrix4d::Identity();
                     transform.block(0,0,3,3) = rotM;
                     transform(0,3)=translation[0]; transform(1,3)=translation[1]; transform(2,3)=translation[2];
 
-
+                    //  std::cout<<"transform is" <<transform<<std::endl;
+                    //    std::cout<<"tfContainer.transform is" <<transform<<std::endl;
                     tfContainer.transform.push_back(transform);  //todo EIGEN matrices
+                    //    std::cout<<"passed " <<transform<<std::endl;
                     //  tfContainer.translation.push_back(rotation);
 
                 }
@@ -649,19 +704,21 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         //
 
     }
+
+
     std::cout <<"Calculating transforms..."<<std::endl;
-    Eigen::Matrix4f imu2base=parseTFcontainer(tfContainer, imuContainer.frame_id, base_link);
-    std::cout<<"imu2base is \n"<<imu2base<<std::endl;
-    Eigen::Matrix4f pc2base=parseTFcontainer(tfContainer, pcContainer.frame_id, base_link);
-    std::cout<<"pc2base is \n"<<pc2base<<std::endl;
-    Eigen::Matrix4f gps2base=parseTFcontainer(tfContainer, gpsContainer.frame_id, base_link);
+    Eigen::Matrix4d imu2base=parseTFcontainer(tfContainer, imuContainer.frame_id, base_link);
+    // std::cout<<"imu2base is \n"<<imu2base<<std::endl;
+    Eigen::Matrix4d pc2base=parseTFcontainer(tfContainer, pcContainer.frame_id, base_link);
+    // std::cout<<"pc2base is \n"<<pc2base<<std::endl;
+    Eigen::Matrix4d gps2base=parseTFcontainer(tfContainer, gpsContainer.frame_id, base_link);
     //  std::cout<<"gps2base is \n"<<gps2base<<std::endl;
 
     //-----------------------UTM CONVERSION----------------------------
 
     Datacontainer gpsUTMContainer=gpsContainer;
 
-    for (int i=0; i< gpsUTMContainer.vect.size(); i++){
+    for (unsigned int i=0; i< gpsUTMContainer.vect.size(); i++){
         geographic_msgs::GeoPoint geo_pt;
         geo_pt.latitude = gpsUTMContainer.vect[i][1];
         geo_pt.longitude= gpsUTMContainer.vect[i][2];
@@ -687,7 +744,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     // Datacontainer rtkLocalUTMContainer;
     if (!topics[3].empty()){
         rtkUTMContainer=rtkContainer;
-        for (int i=0; i< rtkUTMContainer.vect.size(); i++){
+        for (unsigned int i=0; i< rtkUTMContainer.vect.size(); i++){
             geographic_msgs::GeoPoint geo_pt;
             geo_pt.latitude = rtkUTMContainer.vect[i][1];
             geo_pt.longitude= rtkUTMContainer.vect[i][2];
@@ -741,9 +798,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
     }
 
-    //  for (int i=0; i< rtkUTMContainerInterp.vect.size() ; i++ )
+    //  for (unsigned int i=0; i< rtkUTMContainerInterp.vect.size() ; i++ )
     //  {
-    //      for (int j=0; j< rtkUTMContainerInterp.vect[i].size() ; j++ )
+    //      for (unsigned int j=0; j< rtkUTMContainerInterp.vect[i].size() ; j++ )
     //     {
 
 
@@ -786,13 +843,11 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     //---------------------------------------------REGISTRATION-----------------------------------------------
     // lat,lon, radius TODO filter coordinates
 
-
-    /* for (int i=0; i<imuContainerMatched.vect.size(); i++)
-        for (int j=0; j<imuContainerMatched.vect[i].size(); j++)
+    /* for (unsigned int i=0; i<imuContainerMatched.vect.size(); i++)
+        for (unsigned int j=0; j<imuContainerMatched.vect[i].size(); j++)
         {
             {
                 std::cout<<imuContainerMatched.vect[i][j]<<" ";
-
 
             }
             std::cout<<std::endl;
@@ -800,7 +855,6 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 */
     if (rMethod=="gps")
     {
-
 
         GPS* Gps =new GPS();
 
@@ -816,7 +870,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
             std::cout<<std::endl;
 
-            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_aware_icp_local all exit"<<std::endl;
+            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_icp all exit"<<std::endl;
 
             std::cout<<std::endl;
 
@@ -826,9 +880,6 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             std::cin >> selection;
 
             std::cout<<std::endl;
-
-
-
 
             if  (selection=="gps_global" || selection=="all" ){
                 Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
@@ -846,24 +897,27 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
             }
 
-
             if (selection=="icp_local" || selection=="all" ){
+                ICP* Icp =new ICP();
+                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
+                delete Icp;
             }
 
+
+
+            if (selection=="semantic_icp" || selection=="all" ){
+
+                ICP* Icp =new ICP();
+                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                delete Icp;
+
+            }
             if  (selection=="exit" || selection=="all" ){break;}
-
-            if (selection=="semantic_aware_icp_local"){}
-
 
 
         }
 
-
-
         delete Gps;
-
-
-
 
     }
 }

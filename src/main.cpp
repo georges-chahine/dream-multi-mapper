@@ -33,6 +33,12 @@ int main()
     std::string ptCloudTopic = config["ptCloudTopic"].as<std::string>();
     std::string leafSize0 = config["voxelSize"].as<std::string>();
     float leafSize=std::stod(leafSize0);
+    std::string icpConfigFilePath = config["icpConfig"].as<std::string>();
+    std::string inputFiltersConfigFilePath = config["icpInputFilters"].as<std::string>();
+
+    // std::string icpConfigFilePath;  //get path
+    //std::cout<<icpConfigFilePath<<std::endl;
+    std::string mapPostFiltersConfigFilePath = config["icpPostFilters"].as<std::string>();
 
     std::string	semanticPtCloudTopic="";
     std::string	rtkTopic="";
@@ -47,6 +53,16 @@ int main()
     {
         RTK=true;
     }
+
+    std::string computeProbDynamicstr = config["icpComputeProbDynamic"].as<std::string>();
+    bool computeProbDynamic=false;
+
+    if (computeProbDynamicstr=="True" || computeProbDynamicstr=="true")
+    {
+        computeProbDynamic=true;
+    }
+
+
     bool semantics=false;
     std::string semanticsstr = config["semantics"].as<std::string>();
 
@@ -100,7 +116,7 @@ int main()
         //std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize);
+        Io ->readBags(sourceBags[i], currentPath, topics, lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic);
         delete Io;
     }
 

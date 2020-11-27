@@ -3,10 +3,13 @@ project(dream_offline_multi-mapper)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
-
+set(CMAKE_CXX_STANDARD 11)
+add_compile_options(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(libpointmatcher 1.1.0 REQUIRED)
+find_package(Boost COMPONENTS system filesystem REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosbag
@@ -22,14 +25,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 # flags
 add_definitions("-DENABLE_SSE")
-set(CMAKE_CXX_FLAGS
-   "${SSE_FLAGS} -O3 -g -std=c++0x -march=native"
+#set(CMAKE_CXX_FLAGS
+#   "${SSE_FLAGS} -O3 -g -std=gnu++11 -march=native"
 #   "${SSE_FLAGS} -O3 -g -std=c++0x -fno-omit-frame-pointer"
-)
+#)
 
-if (MSVC)
-     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-endif (MSVC)
+#if (MSVC)
+#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+#endif (MSVC)
 
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -38,6 +41,7 @@ set(SOURCE_FILES
   src/IO/IO.cpp
   src/IO/settings.cpp
   src/Registration/gps.cpp
+  src/Registration/icp.cpp
 )
 
 catkin_package(
@@ -52,9 +56,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
- ${catkin_INCLUDE_DIRS} src
+ ${catkin_INCLUDE_DIRS} src "${libpointmatcher_INCLUDE_DIRS}"
 )
+message(STATUS "Using libpointmatcher version ${libpointmatcher_VERSION}")
 add_library(mapper ${SOURCE_FILES})
 
 
@@ -84,10 +88,10 @@ add_executable(dream_offline_multi-mapper src/main.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+message("libpointmatcher_LIBRARIES: ${libpointmatcher_LIBRARIES}")
 ## Specify libraries to link a library or executable target against
  target_link_libraries(dream_offline_multi-mapper mapper yaml-cpp
-   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+   ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} 
  )
 
 #############

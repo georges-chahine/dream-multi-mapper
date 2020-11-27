@@ -16,20 +16,20 @@ GPS::~GPS()
 
 }
 
-void GPS::createMap(std::string currentPath,Eigen::Matrix4f imu2base,Eigen::Matrix4f pc2base,Eigen::Matrix4f gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize)
+void GPS::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize)
 {
     IO::pCloudcontainer pcContainer2=pcContainer;
     std::cout<<"GPS Map Registration...."<<std::endl;
     pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pointCloud (new pcl::PointCloud<pcl::PointXYZRGBL>);
     std::cout<<"Preaparing voxel grid with leafSize "<<leafSize<<" m"<<std::endl;
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
-        Eigen::Quaternion<float> rotation;
+        Eigen::Quaternion<double> rotation;
         rotation.x()=( imuContainer.vect[i][1] );
         rotation.y()=( imuContainer.vect[i][2]  );
         rotation.z()=( imuContainer.vect[i][3]  );
         rotation.w()=( imuContainer.vect[i][4]  );
-        Eigen::Matrix3f rotM=rotation.toRotationMatrix();
-        Eigen::Matrix4f transform= Eigen::Matrix4f::Identity();
+        Eigen::Matrix3d rotM=rotation.toRotationMatrix();
+        Eigen::Matrix4d transform= Eigen::Matrix4d::Identity();
         transform.block(0,0,3,3) = rotM;
         transform=imu2base*transform;
         transform(0,3)=gpsUTMContainer.vect[i][1]; transform(1,3)=gpsUTMContainer.vect[i][2]; transform(2,3)=gpsUTMContainer.vect[i][3];
@@ -37,20 +37,20 @@ void GPS::createMap(std::string currentPath,Eigen::Matrix4f imu2base,Eigen::Matr
         // pcContainer.XYZRGBL[i];
         pcl::PointCloud<pcl::PointXYZRGBL>::Ptr tempCloud (new pcl::PointCloud<pcl::PointXYZRGBL>);
         *tempCloud=pcContainer.XYZRGBL[i];
-        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGBL> sor;
-        sor.setInputCloud (tempCloud);
-        sor.setMeanK (10);
-        sor.setStddevMulThresh (1.0);
-        sor.filter (*tempCloud);
+//        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGBL> sor;
+  //      sor.setInputCloud (tempCloud);
+  //      sor.setMeanK (5);
+  //      sor.setStddevMulThresh (1.0);
+        //sor.filter (*tempCloud);
 
 
-        pcl::VoxelGrid<pcl::PointXYZRGBL> vgrid;
-        vgrid.setInputCloud (tempCloud);
+ //       pcl::VoxelGrid<pcl::PointXYZRGBL> vgrid;
+  //      vgrid.setInputCloud (tempCloud);
 
-        vgrid.setMinimumPointsNumberPerVoxel(2);
-        vgrid.setLeafSize (leafSize, leafSize, leafSize);
+ //       vgrid.setMinimumPointsNumberPerVoxel(2);
+ //       vgrid.setLeafSize (leafSize, leafSize, leafSize);
         // vgrid.setDownsampleAllData(false);
-        vgrid.filter (*tempCloud);
+    //    vgrid.filter (*tempCloud);
 
 
 
@@ -62,8 +62,8 @@ void GPS::createMap(std::string currentPath,Eigen::Matrix4f imu2base,Eigen::Matr
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
             double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;
-            Eigen::Vector4f pcPoints(x,y,z,1.0);
-            Eigen::Vector4f pcPointsTransformed=transform*pc2base*pcPoints;
+            Eigen::Vector4d pcPoints(x,y,z,1.0);
+            Eigen::Vector4d pcPointsTransformed=transform*pc2base*pcPoints;
 
             pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0];
             pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1];
