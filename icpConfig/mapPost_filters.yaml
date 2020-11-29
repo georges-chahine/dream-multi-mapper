@@ -17,8 +17,8 @@
 #- MaxDensityDataPointsFilter:
 #    maxDensity: 10.0
 
-- SurfaceNormalDataPointsFilter:
-    knn: 15
+#- SurfaceNormalDataPointsFilter:
+#    knn: 15
 
 - CutAtDescriptorThresholdDataPointsFilter:
     descName: probabilityDynamic
