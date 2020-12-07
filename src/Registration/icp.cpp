@@ -116,7 +116,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     Eigen::Affine3d transformPrevRot= Eigen::Affine3d::Identity();
 
     Eigen::Affine3d transformICP= Eigen::Affine3d::Identity();
-    double xOff=0; double yOff=0; double zOff=0;
+   // double xOff=0; double yOff=0; double zOff=0;
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
 
         Eigen::Quaternion<double> rotation;
@@ -404,16 +404,12 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         transformPrevIcp=transformICP;
         transformPrevRot.matrix().block(0,0,3,3)=transform.matrix().block(0,0,3,3);
     }
+
     mapPointCloud = densityFilter->filter(mapPointCloud);
     mapPointCloud = maxDensitySubsample->filter(mapPointCloud);
     DP mapPointCloud2=mapPointCloud;
 
-    mapPointCloud2.removeFeature("x");
-    mapPointCloud2.removeFeature("y");
-    mapPointCloud2.removeFeature("z");
-    mapPointCloud2.addFeature("x", pointCloud->getMatrixXfMap(3,8,0).row(0));
-    mapPointCloud2.addFeature("y", pointCloud->getMatrixXfMap(3,8,0).row(0));
-    mapPointCloud2.addFeature("z", pointCloud->getMatrixXfMap(3,8,0).row(0));
+   mapPointCloud2 = rigidTrans->compute(mapPointCloud2, (transform0.matrix()*pc2base).cast <float> ());
 
 
     //  mapPointCloud.save("map.vtk");
@@ -423,7 +419,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     std::string fullPath1= currentPath + "/" + filename + ".pcd" ;
     std::string fullPath2= currentPath + "/" + filename + ".ply" ;
     std::string fullPath3= currentPath + "/" + filename + ".vtk" ;
-    mapPointCloud.save(fullPath3);
+    mapPointCloud2.save(fullPath3);
     std::cout<<std::endl;
     std::cout<<fullPath1<<std::endl;
     std::cout<<fullPath2<<std::endl;
