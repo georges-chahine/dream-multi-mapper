@@ -94,7 +94,13 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     TP T_to_map_from_new = TP::Identity(4,4); // assumes 3D
 
     //-----------------------------------------------------------------------------/////////////////////////////////---------------------------/
-
+    for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
+        for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
+            pcContainer.XYZRGBL[i].points[j].x =pcContainer.XYZRGBL[i].points[j].x-pcContainer.XYZRGBL[0].points[0].x;
+            pcContainer.XYZRGBL[i].points[j].y =pcContainer.XYZRGBL[i].points[j].y-pcContainer.XYZRGBL[0].points[0].y;
+            pcContainer.XYZRGBL[i].points[j].z =pcContainer.XYZRGBL[i].points[j].z-pcContainer.XYZRGBL[0].points[0].z;
+        }
+    }
 
     IO::pCloudcontainer pcContainer2=pcContainer;
     std::cout<<"ICP Map Registration...."<<std::endl;
@@ -164,7 +170,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         datax=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0);
         datay=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1);
         dataz=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2);
-       // datax.array()=datax.array()-xOff;
+        // datax.array()=datax.array()-xOff;
         //datay.array()=datay.array()-yOff;
         //dataz.array()=dataz.array();
 
@@ -388,15 +394,10 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
 
             //transform0*pc2base*
-            if (i==0 && j==0) {
-              xOff=pcPointsTransformed[0];
-              yOff=pcPointsTransformed[1];
-              zOff=pcPointsTransformed[2];
 
-            }
-            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-xOff;
-            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-yOff;
-            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-zOff;
+            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0];
+            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1];
+            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2];
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
         }
         transformPrev=transform;
