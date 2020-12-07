@@ -110,7 +110,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     Eigen::Affine3d transformPrevRot= Eigen::Affine3d::Identity();
 
     Eigen::Affine3d transformICP= Eigen::Affine3d::Identity();
-
+    double xOff=0; double yOff=0; double zOff=0;
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
 
         Eigen::Quaternion<double> rotation;
@@ -131,6 +131,8 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             transformRot0.matrix().block(0,0,3,3) =transform0.matrix().block(0,0,3,3);
             //transformICP=transform0*pc2base;
             pose=transform0;
+
+
         }
 
         pcl::PointCloud<pcl::PointXYZRGBL>::Ptr tempCloud (new pcl::PointCloud<pcl::PointXYZRGBL>);
@@ -162,9 +164,9 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         datax=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0);
         datay=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1);
         dataz=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2);
-        datax.array()=datax.array()-datax(0,0);
-        datay.array()=datay.array()-datay(0,0);
-        dataz.array()=dataz.array()-dataz(0,0);
+       // datax.array()=datax.array()-xOff;
+        //datay.array()=datay.array()-yOff;
+        //dataz.array()=dataz.array();
 
         data.addFeature("x", datax);
         data.addFeature("y", datay);
@@ -386,9 +388,15 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
 
             //transform0*pc2base*
-            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0];
-            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1];
-            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2];
+            if (i==0 && j==0) {
+              xOff=pcPointsTransformed[0];
+              yOff=pcPointsTransformed[1];
+              zOff=pcPointsTransformed[2];
+
+            }
+            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-xOff;
+            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-yOff;
+            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-zOff;
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
         }
         transformPrev=transform;
