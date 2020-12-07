@@ -96,9 +96,9 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     //-----------------------------------------------------------------------------/////////////////////////////////---------------------------/
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
-            pcContainer.XYZRGBL[i].points[j].x =pcContainer.XYZRGBL[i].points[j].x-pcContainer.XYZRGBL[0].points[0].x;
-            pcContainer.XYZRGBL[i].points[j].y =pcContainer.XYZRGBL[i].points[j].y-pcContainer.XYZRGBL[0].points[0].y;
-            pcContainer.XYZRGBL[i].points[j].z =pcContainer.XYZRGBL[i].points[j].z-pcContainer.XYZRGBL[0].points[0].z;
+            pcContainer.XYZRGBL[i].points[j].x =pcContainer.XYZRGBL[i].points[j].x-gpsUTMContainer.vect[i][1];
+            pcContainer.XYZRGBL[i].points[j].y =pcContainer.XYZRGBL[i].points[j].y-gpsUTMContainer.vect[i][2];
+            pcContainer.XYZRGBL[i].points[j].z =pcContainer.XYZRGBL[i].points[j].z-gpsUTMContainer.vect[i][3];
         }
     }
 
