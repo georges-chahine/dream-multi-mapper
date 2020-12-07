@@ -67,7 +67,7 @@ void GPS::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         Eigen::Matrix4d pose=transform;
         Eigen::Matrix3d poseRot=pose.block(0,0,3,3);
         Eigen::Quaterniond q(poseRot);
-        poseStream<<pcContainer.timestamp[i]<<","<<pose(0,3)<<","<<pose(1,3)<<","<<pose(3,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
+        poseStream<<pcContainer.timestamp[i]<<","<<pose(0,3)<<","<<pose(1,3)<<","<<pose(2,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
             double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;

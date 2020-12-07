@@ -14,7 +14,7 @@ sourceBags:
 - "/run/user/1000/gvfs/sftp:host=tale.georgiatech-metz.fr,user=georges/dream-storage/Backpack_Dataset/Bags/lake_bPearl/200803/3/noCam/"
 mapRegistration: "gps"
 radius: "30"
-voxelSize: "0.1"
+voxelSize: "0.05"
 pathOut: "/home/gchahine/mapperOutput/"
 Coordinates:
 - "49.105696"

@@ -154,10 +154,25 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         //std::cout<<" n_z1 is "<<pcContainer.normals[i].points[0].normal_z<<std::endl;
 
 
-        data.addFeature("x", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0));
-        data.addFeature("y", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1));
-        data.addFeature("z", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2));
-        data.addDescriptor("normals", dataNormals);
+
+
+        Eigen::MatrixXf datax(1,pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0).size());
+        Eigen::MatrixXf datay(1,pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1).size());
+        Eigen::MatrixXf dataz(1,pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2).size());
+        datax=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0);
+        datay=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1);
+        dataz=pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2);
+        datax.array()=datax.array()-datax(0,0);
+        datay.array()=datay.array()-datay(0,0);
+        dataz.array()=dataz.array()-dataz(0,0);
+
+        data.addFeature("x", datax);
+        data.addFeature("y", datay);
+        data.addFeature("z", dataz);
+        //data.addFeature("x", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0));
+        // data.addFeature("y", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1));
+        // data.addFeature("z", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2));
+        // data.addDescriptor("normals", dataNormals);
         if (semantics)
         {
             Eigen::MatrixXf dataSemantics(1,pcContainer.normals[i].getMatrixXfMap(3,8,0).row(0).size());
@@ -166,10 +181,10 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
 
             //  data.Labels=
-         //   std::cout<<"-------LABELS--------------------------------------"<<std::endl;
-           // std::cout<<pcContainer.XYZRGBL[i].getMatrixXfMap(7,8,0).row(5)<<std::endl;
+            //   std::cout<<"-------LABELS--------------------------------------"<<std::endl;
+            // std::cout<<pcContainer.XYZRGBL[i].getMatrixXfMap(7,8,0).row(5)<<std::endl;
 
-           // std::cout<< " ---------------Labels--------------------------SHOULD BE"<<std::endl;
+            // std::cout<< " ---------------Labels--------------------------SHOULD BE"<<std::endl;
             for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
                 dataSemantics(0,j)=(float)pcContainer.XYZRGBL[i].points[j].label;
                 semanticWeightsFull(0,j)=semanticWeights[pcContainer.XYZRGBL[i].points[j].label];
@@ -361,14 +376,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
         Eigen::Matrix3d poseRot=pose.matrix().block(0,0,3,3);
         Eigen::Quaterniond q(poseRot);
-        poseStream<<pcContainer.timestamp[i]<<","<<pose.matrix()(0,3)<<","<<pose.matrix()(1,3)<<","<<pose.matrix()(3,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
+        poseStream<<pcContainer.timestamp[i]<<","<<pose.matrix()(0,3)<<","<<pose.matrix()(1,3)<<","<<pose.matrix()(2,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
             double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;
             Eigen::Vector4d pcPoints(x,y,z,1.0);
             Eigen::Vector4d pcPointsTransformed=pose.matrix()*pcPoints;
 
-          //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
+            //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
 
             //transform0*pc2base*
             pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0];
@@ -382,12 +397,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     }
     mapPointCloud = densityFilter->filter(mapPointCloud);
     mapPointCloud = maxDensitySubsample->filter(mapPointCloud);
-    mapPointCloud.save("map.vtk");
+    //  mapPointCloud.save("map.vtk");
     poseStream.close();
     pcContainer2.XYZRGBL.clear();
     pcContainer2.XYZRGBL.shrink_to_fit();
     std::string fullPath1= currentPath + "/" + filename + ".pcd" ;
     std::string fullPath2= currentPath + "/" + filename + ".ply" ;
+    std::string fullPath3= currentPath + "/" + filename + ".vtk" ;
+    mapPointCloud.save(fullPath3);
     std::cout<<std::endl;
     std::cout<<fullPath1<<std::endl;
     std::cout<<fullPath2<<std::endl;
