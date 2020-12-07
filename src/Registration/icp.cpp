@@ -405,6 +405,16 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     }
     mapPointCloud = densityFilter->filter(mapPointCloud);
     mapPointCloud = maxDensitySubsample->filter(mapPointCloud);
+    DP mapPointCloud2=mapPointCloud;
+
+    mapPointCloud2.removeFeature("x");
+    mapPointCloud2.removeFeature("y");
+    mapPointCloud2.removeFeature("z");
+    mapPointCloud2.addFeature("x", pointCloud->getMatrixXfMap(3,8,0).row(0));
+    mapPointCloud2.addFeature("y", pointCloud->getMatrixXfMap(3,8,0).row(0));
+    mapPointCloud2.addFeature("z", pointCloud->getMatrixXfMap(3,8,0).row(0));
+
+
     //  mapPointCloud.save("map.vtk");
     poseStream.close();
     pcContainer2.XYZRGBL.clear();
