@@ -94,14 +94,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     TP T_to_map_from_new = TP::Identity(4,4); // assumes 3D
 
     //-----------------------------------------------------------------------------/////////////////////////////////---------------------------/
-    for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
+  /*  for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
             pcContainer.XYZRGBL[i].points[j].x =pcContainer.XYZRGBL[i].points[j].x-gpsUTMContainer.vect[i][1];
             pcContainer.XYZRGBL[i].points[j].y =pcContainer.XYZRGBL[i].points[j].y-gpsUTMContainer.vect[i][2];
             pcContainer.XYZRGBL[i].points[j].z =pcContainer.XYZRGBL[i].points[j].z-gpsUTMContainer.vect[i][3];
         }
     }
-
+*/
     IO::pCloudcontainer pcContainer2=pcContainer;
     std::cout<<"ICP Map Registration...."<<std::endl;
     pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pointCloud (new pcl::PointCloud<pcl::PointXYZRGBL>);
@@ -395,9 +395,9 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             //transform0*pc2base*
 
-            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0];
-            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1];
-            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2];
+            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[i][1];
+            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[i][2];
+            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[i][3];
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
         }
         transformPrev=transform;
@@ -409,7 +409,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     mapPointCloud = maxDensitySubsample->filter(mapPointCloud);
     DP mapPointCloud2=mapPointCloud;
 
-   mapPointCloud2 = rigidTrans->compute(mapPointCloud2, (transform0.matrix()*pc2base).cast <float> ());
+   mapPointCloud2 = rigidTrans->compute(mapPointCloud2, (transformRot0.matrix()*pc2base).cast <float> ());
 
 
     //  mapPointCloud.save("map.vtk");
