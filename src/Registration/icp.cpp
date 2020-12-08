@@ -395,9 +395,9 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             //transform0*pc2base*
 
-            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[i][1];
-            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[i][2];
-            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[i][3];
+            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[0][1];
+            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[0][2];
+            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[0][3];
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
         }
         transformPrev=transform;
