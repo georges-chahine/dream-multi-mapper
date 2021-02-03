@@ -406,7 +406,7 @@ std::uint32_t IO::checkPointLabel(int& r, int& g, int& b)
     //return 0;
 }
 
-void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic)
+void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic)
 {
     stringvec v;
     read_directory(sourceBags, v);
@@ -718,6 +718,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
     Datacontainer gpsUTMContainer=gpsContainer;
 
+
     for (unsigned int i=0; i< gpsUTMContainer.vect.size(); i++){
         geographic_msgs::GeoPoint geo_pt;
         geo_pt.latitude = gpsUTMContainer.vect[i][1];
@@ -727,197 +728,424 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         gpsUTMContainer.vect[i][1]=utm_pt.northing;
         gpsUTMContainer.vect[i][2]=utm_pt.easting;
         gpsUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
-    }
-
-    geographic_msgs::GeoPoint geo_pt2;
-    geo_pt2.latitude =lat; geo_pt2.longitude= lon; //geo_pt2.altitude = ;
-    geodesy::UTMPoint utm_pt2(geo_pt2);
-    std::vector<double> UTM_ref {utm_pt2.northing, utm_pt2.easting};
-    //   std::cout<<UTM_ref[0]<<" "<<UTM_ref[1]<<std::endl;
-
-    //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
-    std::cout <<"Applying local maps..."<<std::endl;
-
-    std::vector<std::vector<double>> timeRange;
-    timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
-    Datacontainer rtkUTMContainer;
-    // Datacontainer rtkLocalUTMContainer;
-    if (!topics[3].empty()){
-        rtkUTMContainer=rtkContainer;
-        for (unsigned int i=0; i< rtkUTMContainer.vect.size(); i++){
-            geographic_msgs::GeoPoint geo_pt;
-            geo_pt.latitude = rtkUTMContainer.vect[i][1];
-            geo_pt.longitude= rtkUTMContainer.vect[i][2];
-            geo_pt.altitude = rtkUTMContainer.vect[i][3];
-            geodesy::UTMPoint utm_pt(geo_pt);
-            rtkUTMContainer.vect[i][1]=utm_pt.northing;
-            rtkUTMContainer.vect[i][2]=utm_pt.easting;
-            rtkUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
-        }
-        // timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
-    }
-    Datacontainer imuLocalContainer, gpsLocalUTMContainer, rtkLocalUTMContainer;
-    pCloudcontainer pcLocalContainer;
-
-    timeDataFilter(imuContainer, timeRange, imuLocalContainer);
-    timeDataFilter(pcContainer, timeRange, pcLocalContainer);
-    timeDataFilter(gpsUTMContainer, timeRange, gpsLocalUTMContainer);
-    if (!topics[3].empty()){
-        timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
-    }
-
-
-    //--------------------------------INTERPOLATION------------------------------------------
-    std::cout <<"Data synchronization and Interpolation..."<<std::endl;
-
-    Datacontainer imuLocalContainerInterp, gpsLocalUTMContainerInterp, gpsUTMContainerInterp, imuContainerInterp, rtkLocalUTMContainerInterp, rtkUTMContainerInterp;
-    pCloudcontainer pcLocalContainerInterp, pcContainerInterp;
-
-    interpolateRefRange(imuLocalContainer ,gpsLocalUTMContainer, gpsLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
-    interpolateRefRange(imuContainer ,gpsUTMContainer, gpsUTMContainerInterp);
-
-    std::cout<<gpsLocalUTMContainerInterp.vect.size()<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect.size()<< " "<<imuContainer.vect.size()<< std::endl;
-
-    // std::cout<<gpsLocalUTMContainerInterp.vect<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect<< " "<<imuContainer.vect<< std::endl;
-
-    //  interpolateRefRange(imuLocalContainer ,pcLocalContainer, pcLocalContainerInterp);    //refList (Datacontainer Type), Input, Output
-    // interpolateRefRange(imuContainer ,pcContainer, pcContainerInterp);
-
-
-
-    // interpolateRefRange(imuLocalContainer ,imuLocalContainer, imuLocalContainerInterp);    //refList (Datacontainer Type), Input, Output  IMU inerpolation
-    // interpolateRefRange(imuContainer ,imuContainer, imuContainerInterp);
-
-
-    if (!topics[3].empty()){
-
-
-        interpolateRefRange(imuLocalContainer ,rtkLocalUTMContainer, rtkLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
-        std::cout<<std::endl;
-        interpolateRefRange(imuContainer ,rtkUTMContainer, rtkUTMContainerInterp);
-
-    }
-
-    //  for (unsigned int i=0; i< rtkUTMContainerInterp.vect.size() ; i++ )
-    //  {
-    //      for (unsigned int j=0; j< rtkUTMContainerInterp.vect[i].size() ; j++ )
-    //     {
-
-
-    //  std::cout<<rtkUTMContainerInterp.vect[i][j]<< " ";
-
-    //   }
-    //  std::cout<<std::endl;
-    // }
-    //std::cout<<"-----size match start------"<<std::endl;
-    //   std::cout<<rtkLocalUTMContainerInterp.vect.size()<<" "<<rtkUTMContainerInterp.vect.size()<<" "<< imuLocalContainer.vect.size()<<" "<<imuContainer.vect.size()<< std::endl;
-
-    // std::cout<<rtkLocalUTMContainer.vect.size()<<" "<<rtkUTMContainer.vect.size()<<std::endl;
-    //std::cout<<"-----size match end ------"<<std::endl;
-
-    //---------------------------------------------MATCHING------------------------------------------------
-    Datacontainer imuContainerMatched, gpsUTMContainerMatched, rtkUTMContainerMatched;
-    Datacontainer imuLocalContainerMatched, gpsLocalUTMContainerMatched, rtkLocalUTMContainerMatched;
-
-    if (!topics[3].empty()){
-
-        matchDataToPointCloudRate(pcContainer.timestamp , rtkUTMContainerInterp, rtkUTMContainerMatched);
-        matchDataToPointCloudRate(pcLocalContainer.timestamp , rtkLocalUTMContainerInterp, rtkLocalUTMContainerMatched);
-    }
-
-    matchDataToPointCloudRate(pcContainer.timestamp , gpsUTMContainerInterp, gpsUTMContainerMatched);
-    matchDataToPointCloudRate(pcContainer.timestamp , imuContainer, imuContainerMatched);
-
-
-    matchDataToPointCloudRate(pcLocalContainer.timestamp , gpsLocalUTMContainerInterp, gpsLocalUTMContainerMatched);
-    matchDataToPointCloudRate(pcLocalContainer.timestamp , imuLocalContainer, imuLocalContainerMatched);
-
-
-
-    std::cout<<"-----MATCHING SECTION------"<<std::endl;
-    std::cout<<pcContainer.timestamp.size()<<" "<<rtkUTMContainerMatched.vect.size()<<" "<< imuContainerMatched.vect.size()<<" "<<gpsUTMContainerMatched.vect.size()<< std::endl;
-
-    std::cout<<pcLocalContainer.timestamp.size()<<" "<<rtkLocalUTMContainerMatched.vect.size()<<" "<< imuLocalContainerMatched.vect.size()<<" "<<gpsLocalUTMContainerMatched.vect.size()<< std::endl;
-    std::cout<<"-----MATCHING SECTION ENDS------"<<std::endl;
-
-    //---------------------------------------------REGISTRATION-----------------------------------------------
-    // lat,lon, radius TODO filter coordinates
-
-    /* for (unsigned int i=0; i<imuContainerMatched.vect.size(); i++)
-        for (unsigned int j=0; j<imuContainerMatched.vect[i].size(); j++)
+        if (mapNumber==0)
         {
+
+            if (i==0){
+                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2],0,0};
+
+                travelledDistance.push_back(tempVec);
+            }
+            else
             {
-                std::cout<<imuContainerMatched.vect[i][j]<<" ";
+                double distTemp=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3],2));
+                double distTemp0=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[0][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[0][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[0][3],2));
+                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2], distTemp, distTemp0};
+                travelledDistance.push_back(tempVec);
 
             }
-            std::cout<<std::endl;
         }
-*/
-    if (rMethod=="gps")
+
+    }
+
+    int localCounter=0;
+    //generate list of lat on with distances
+    //then iterate on that list while changing file naems
+    if (autoGenerateMaps){
+        double elapsedTemp=999999;
+        std::string selection;
+        for (int i=0; i<travelledDistance.size(); i++){
+            elapsedTemp=elapsedTemp+travelledDistance[i][2];
+
+            if (elapsedTemp>autoDist && travelledDistance[i][3] > 50 ){    //query at least 50 meters from the starting point
+                elapsedTemp=0;
+
+            }
+
+            else
+
+            {
+                continue;
+
+            }
+
+            std::vector<double> UTM_ref {travelledDistance[i][0], travelledDistance[i][1]};
+
+            //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
+            std::cout <<"Applying local maps..."<<std::endl;
+
+            std::vector<std::vector<double>> timeRange;
+            timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
+            Datacontainer rtkUTMContainer;
+            // Datacontainer rtkLocalUTMContainer;
+            if (!topics[3].empty()){
+                rtkUTMContainer=rtkContainer;
+                for (unsigned int i=0; i< rtkUTMContainer.vect.size(); i++){
+                    geographic_msgs::GeoPoint geo_pt;
+                    geo_pt.latitude = rtkUTMContainer.vect[i][1];
+                    geo_pt.longitude= rtkUTMContainer.vect[i][2];
+                    geo_pt.altitude = rtkUTMContainer.vect[i][3];
+                    geodesy::UTMPoint utm_pt(geo_pt);
+                    rtkUTMContainer.vect[i][1]=utm_pt.northing;
+                    rtkUTMContainer.vect[i][2]=utm_pt.easting;
+                    rtkUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
+                }
+                // timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
+            }
+            Datacontainer imuLocalContainer, gpsLocalUTMContainer, rtkLocalUTMContainer;
+            pCloudcontainer pcLocalContainer;
+
+            timeDataFilter(imuContainer, timeRange, imuLocalContainer);
+            timeDataFilter(pcContainer, timeRange, pcLocalContainer);
+            timeDataFilter(gpsUTMContainer, timeRange, gpsLocalUTMContainer);
+            if (!topics[3].empty()){
+                timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
+            }
+
+
+            //--------------------------------INTERPOLATION------------------------------------------
+            std::cout <<"Data synchronization and Interpolation..."<<std::endl;
+
+            Datacontainer imuLocalContainerInterp, gpsLocalUTMContainerInterp, gpsUTMContainerInterp, imuContainerInterp, rtkLocalUTMContainerInterp, rtkUTMContainerInterp;
+            pCloudcontainer pcLocalContainerInterp, pcContainerInterp;
+
+            interpolateRefRange(imuLocalContainer ,gpsLocalUTMContainer, gpsLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
+            interpolateRefRange(imuContainer ,gpsUTMContainer, gpsUTMContainerInterp);
+
+            std::cout<<gpsLocalUTMContainerInterp.vect.size()<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect.size()<< " "<<imuContainer.vect.size()<< std::endl;
+
+            // std::cout<<gpsLocalUTMContainerInterp.vect<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect<< " "<<imuContainer.vect<< std::endl;
+
+            //  interpolateRefRange(imuLocalContainer ,pcLocalContainer, pcLocalContainerInterp);    //refList (Datacontainer Type), Input, Output
+            // interpolateRefRange(imuContainer ,pcContainer, pcContainerInterp);
+
+
+
+            // interpolateRefRange(imuLocalContainer ,imuLocalContainer, imuLocalContainerInterp);    //refList (Datacontainer Type), Input, Output  IMU inerpolation
+            // interpolateRefRange(imuContainer ,imuContainer, imuContainerInterp);
+
+
+            if (!topics[3].empty()){
+
+
+                interpolateRefRange(imuLocalContainer ,rtkLocalUTMContainer, rtkLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
+                std::cout<<std::endl;
+                interpolateRefRange(imuContainer ,rtkUTMContainer, rtkUTMContainerInterp);
+
+            }
+
+            //  for (unsigned int i=0; i< rtkUTMContainerInterp.vect.size() ; i++ )
+            //  {
+            //      for (unsigned int j=0; j< rtkUTMContainerInterp.vect[i].size() ; j++ )
+            //     {
+
+
+            //  std::cout<<rtkUTMContainerInterp.vect[i][j]<< " ";
+
+            //   }
+            //  std::cout<<std::endl;
+            // }
+            //std::cout<<"-----size match start------"<<std::endl;
+            //   std::cout<<rtkLocalUTMContainerInterp.vect.size()<<" "<<rtkUTMContainerInterp.vect.size()<<" "<< imuLocalContainer.vect.size()<<" "<<imuContainer.vect.size()<< std::endl;
+
+            // std::cout<<rtkLocalUTMContainer.vect.size()<<" "<<rtkUTMContainer.vect.size()<<std::endl;
+            //std::cout<<"-----size match end ------"<<std::endl;
+
+            //---------------------------------------------MATCHING------------------------------------------------
+            Datacontainer imuContainerMatched, gpsUTMContainerMatched, rtkUTMContainerMatched;
+            Datacontainer imuLocalContainerMatched, gpsLocalUTMContainerMatched, rtkLocalUTMContainerMatched;
+
+            if (!topics[3].empty()){
+
+                matchDataToPointCloudRate(pcContainer.timestamp , rtkUTMContainerInterp, rtkUTMContainerMatched);
+                matchDataToPointCloudRate(pcLocalContainer.timestamp , rtkLocalUTMContainerInterp, rtkLocalUTMContainerMatched);
+            }
+
+            matchDataToPointCloudRate(pcContainer.timestamp , gpsUTMContainerInterp, gpsUTMContainerMatched);
+            matchDataToPointCloudRate(pcContainer.timestamp , imuContainer, imuContainerMatched);
+
+
+            matchDataToPointCloudRate(pcLocalContainer.timestamp , gpsLocalUTMContainerInterp, gpsLocalUTMContainerMatched);
+            matchDataToPointCloudRate(pcLocalContainer.timestamp , imuLocalContainer, imuLocalContainerMatched);
+
+
+
+            std::cout<<"-----MATCHING SECTION------"<<std::endl;
+            std::cout<<pcContainer.timestamp.size()<<" "<<rtkUTMContainerMatched.vect.size()<<" "<< imuContainerMatched.vect.size()<<" "<<gpsUTMContainerMatched.vect.size()<< std::endl;
+
+            std::cout<<pcLocalContainer.timestamp.size()<<" "<<rtkLocalUTMContainerMatched.vect.size()<<" "<< imuLocalContainerMatched.vect.size()<<" "<<gpsLocalUTMContainerMatched.vect.size()<< std::endl;
+            std::cout<<"-----MATCHING SECTION ENDS------"<<std::endl;
+
+            //---------------------------------------------REGISTRATION-----------------------------------------------
+            // lat,lon, radius TODO filter coordinates
+
+            /* for (unsigned int i=0; i<imuContainerMatched.vect.size(); i++)
+            for (unsigned int j=0; j<imuContainerMatched.vect[i].size(); j++)
+            {
+                {
+                    std::cout<<imuContainerMatched.vect[i][j]<<" ";
+
+                }
+                std::cout<<std::endl;
+            }
+    */
+            if (rMethod=="gps")
+            {
+
+                GPS* Gps =new GPS();
+
+                std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"choose from: gps_local rtk_local icp_local semantic_icp all exit"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
+
+                std::cout<<"Selection:"<<std::endl;
+                if (selection.empty()){
+                    std::cin >> selection;
+                }
+
+
+                std::string exportName=selection + "_" + std::to_string(localCounter) ;
+                localCounter++;
+                std::cout<<std::endl;
+
+                if (selection=="gps_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize );
+                }
+                if (selection=="rtk_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, exportName, leafSize );
+                }
+                if (selection=="icp_local" || selection=="all" ){
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
+                    delete Icp;
+                }
+                if (selection=="semantic_icp" || selection=="all" ){
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                    delete Icp;
+
+                }
+                if  (selection=="exit" || selection=="all" ){break;}
+
+
+
+
+                delete Gps;
+
+            }
+
+        }
+
+    }
+
+
+
+    else
     {
 
-        GPS* Gps =new GPS();
+        geographic_msgs::GeoPoint geo_pt2;
+        geo_pt2.latitude =lat; geo_pt2.longitude= lon; //geo_pt2.altitude = ;
+        geodesy::UTMPoint utm_pt2(geo_pt2);
+        std::vector<double> UTM_ref {utm_pt2.northing, utm_pt2.easting};
+        //   std::cout<<UTM_ref[0]<<" "<<UTM_ref[1]<<std::endl;
 
-        while (true)
-        {
+        //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
+        std::cout <<"Applying local maps..."<<std::endl;
 
-            std::string selection;
-            std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
+        std::vector<std::vector<double>> timeRange;
+        timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
+        Datacontainer rtkUTMContainer;
+        // Datacontainer rtkLocalUTMContainer;
+        if (!topics[3].empty()){
+            rtkUTMContainer=rtkContainer;
+            for (unsigned int i=0; i< rtkUTMContainer.vect.size(); i++){
+                geographic_msgs::GeoPoint geo_pt;
+                geo_pt.latitude = rtkUTMContainer.vect[i][1];
+                geo_pt.longitude= rtkUTMContainer.vect[i][2];
+                geo_pt.altitude = rtkUTMContainer.vect[i][3];
+                geodesy::UTMPoint utm_pt(geo_pt);
+                rtkUTMContainer.vect[i][1]=utm_pt.northing;
+                rtkUTMContainer.vect[i][2]=utm_pt.easting;
+                rtkUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
+            }
+            // timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
+        }
+        Datacontainer imuLocalContainer, gpsLocalUTMContainer, rtkLocalUTMContainer;
+        pCloudcontainer pcLocalContainer;
 
+        timeDataFilter(imuContainer, timeRange, imuLocalContainer);
+        timeDataFilter(pcContainer, timeRange, pcLocalContainer);
+        timeDataFilter(gpsUTMContainer, timeRange, gpsLocalUTMContainer);
+        if (!topics[3].empty()){
+            timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
+        }
+
+
+        //--------------------------------INTERPOLATION------------------------------------------
+        std::cout <<"Data synchronization and Interpolation..."<<std::endl;
+
+        Datacontainer imuLocalContainerInterp, gpsLocalUTMContainerInterp, gpsUTMContainerInterp, imuContainerInterp, rtkLocalUTMContainerInterp, rtkUTMContainerInterp;
+        pCloudcontainer pcLocalContainerInterp, pcContainerInterp;
+
+        interpolateRefRange(imuLocalContainer ,gpsLocalUTMContainer, gpsLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
+        interpolateRefRange(imuContainer ,gpsUTMContainer, gpsUTMContainerInterp);
+
+        std::cout<<gpsLocalUTMContainerInterp.vect.size()<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect.size()<< " "<<imuContainer.vect.size()<< std::endl;
+
+        // std::cout<<gpsLocalUTMContainerInterp.vect<< " "<<gpsUTMContainerInterp.vect.size()<< " "<< imuLocalContainer.vect<< " "<<imuContainer.vect<< std::endl;
+
+        //  interpolateRefRange(imuLocalContainer ,pcLocalContainer, pcLocalContainerInterp);    //refList (Datacontainer Type), Input, Output
+        // interpolateRefRange(imuContainer ,pcContainer, pcContainerInterp);
+
+
+
+        // interpolateRefRange(imuLocalContainer ,imuLocalContainer, imuLocalContainerInterp);    //refList (Datacontainer Type), Input, Output  IMU inerpolation
+        // interpolateRefRange(imuContainer ,imuContainer, imuContainerInterp);
+
+
+        if (!topics[3].empty()){
+
+
+            interpolateRefRange(imuLocalContainer ,rtkLocalUTMContainer, rtkLocalUTMContainerInterp);    //refList (Datacontainer Type), Input, Output
             std::cout<<std::endl;
-
-            std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
-
-            std::cout<<std::endl;
-
-            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_icp all exit"<<std::endl;
-
-            std::cout<<std::endl;
-
-            std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
-
-            std::cout<<"Selection:"<<std::endl;
-            std::cin >> selection;
-
-            std::cout<<std::endl;
-
-            if  (selection=="gps_global" || selection=="all" ){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
-            }
-
-            if (selection=="gps_local" || selection=="all" ){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "gps_local", leafSize );
-            }
-
-            if  (selection=="rtk_global" || selection=="all" ){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", 2*leafSize );
-            }
-
-            if (selection=="rtk_local" || selection=="all" ){
-                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
-            }
-
-            if (selection=="icp_local" || selection=="all" ){
-                ICP* Icp =new ICP();
-                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
-                delete Icp;
-            }
-
-
-
-            if (selection=="semantic_icp" || selection=="all" ){
-
-                ICP* Icp =new ICP();
-                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
-                delete Icp;
-
-            }
-            if  (selection=="exit" || selection=="all" ){break;}
-
+            interpolateRefRange(imuContainer ,rtkUTMContainer, rtkUTMContainerInterp);
 
         }
 
-        delete Gps;
+        //  for (unsigned int i=0; i< rtkUTMContainerInterp.vect.size() ; i++ )
+        //  {
+        //      for (unsigned int j=0; j< rtkUTMContainerInterp.vect[i].size() ; j++ )
+        //     {
+
+
+        //  std::cout<<rtkUTMContainerInterp.vect[i][j]<< " ";
+
+        //   }
+        //  std::cout<<std::endl;
+        // }
+        //std::cout<<"-----size match start------"<<std::endl;
+        //   std::cout<<rtkLocalUTMContainerInterp.vect.size()<<" "<<rtkUTMContainerInterp.vect.size()<<" "<< imuLocalContainer.vect.size()<<" "<<imuContainer.vect.size()<< std::endl;
+
+        // std::cout<<rtkLocalUTMContainer.vect.size()<<" "<<rtkUTMContainer.vect.size()<<std::endl;
+        //std::cout<<"-----size match end ------"<<std::endl;
+
+        //---------------------------------------------MATCHING------------------------------------------------
+        Datacontainer imuContainerMatched, gpsUTMContainerMatched, rtkUTMContainerMatched;
+        Datacontainer imuLocalContainerMatched, gpsLocalUTMContainerMatched, rtkLocalUTMContainerMatched;
+
+        if (!topics[3].empty()){
+
+            matchDataToPointCloudRate(pcContainer.timestamp , rtkUTMContainerInterp, rtkUTMContainerMatched);
+            matchDataToPointCloudRate(pcLocalContainer.timestamp , rtkLocalUTMContainerInterp, rtkLocalUTMContainerMatched);
+        }
+
+        matchDataToPointCloudRate(pcContainer.timestamp , gpsUTMContainerInterp, gpsUTMContainerMatched);
+        matchDataToPointCloudRate(pcContainer.timestamp , imuContainer, imuContainerMatched);
+
+
+        matchDataToPointCloudRate(pcLocalContainer.timestamp , gpsLocalUTMContainerInterp, gpsLocalUTMContainerMatched);
+        matchDataToPointCloudRate(pcLocalContainer.timestamp , imuLocalContainer, imuLocalContainerMatched);
+
+
+
+        std::cout<<"-----MATCHING SECTION------"<<std::endl;
+        std::cout<<pcContainer.timestamp.size()<<" "<<rtkUTMContainerMatched.vect.size()<<" "<< imuContainerMatched.vect.size()<<" "<<gpsUTMContainerMatched.vect.size()<< std::endl;
+
+        std::cout<<pcLocalContainer.timestamp.size()<<" "<<rtkLocalUTMContainerMatched.vect.size()<<" "<< imuLocalContainerMatched.vect.size()<<" "<<gpsLocalUTMContainerMatched.vect.size()<< std::endl;
+        std::cout<<"-----MATCHING SECTION ENDS------"<<std::endl;
+
+        //---------------------------------------------REGISTRATION-----------------------------------------------
+        // lat,lon, radius TODO filter coordinates
+
+        /* for (unsigned int i=0; i<imuContainerMatched.vect.size(); i++)
+            for (unsigned int j=0; j<imuContainerMatched.vect[i].size(); j++)
+            {
+                {
+                    std::cout<<imuContainerMatched.vect[i][j]<<" ";
+
+                }
+                std::cout<<std::endl;
+            }
+    */
+        if (rMethod=="gps")
+        {
+
+            GPS* Gps =new GPS();
+
+            while (true)
+            {
+
+                std::string selection;
+                std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_icp all exit"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
+
+                std::cout<<"Selection:"<<std::endl;
+                std::cin >> selection;
+
+                std::cout<<std::endl;
+
+                if  (selection=="gps_global" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
+                }
+
+                if (selection=="gps_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "gps_local", leafSize );
+                }
+
+                if  (selection=="rtk_global" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", 2*leafSize );
+                }
+
+                if (selection=="rtk_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
+                }
+
+                if (selection=="icp_local" || selection=="all" ){
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
+                    delete Icp;
+                }
+
+
+
+                if (selection=="semantic_icp" || selection=="all" ){
+
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                    delete Icp;
+
+                }
+                if  (selection=="exit" || selection=="all" ){break;}
+
+
+            }
+
+            delete Gps;
+
+        }
+
+
 
     }
 }

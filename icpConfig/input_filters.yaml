@@ -15,8 +15,8 @@
 - RandomSamplingDataPointsFilter:
     prob: 0.8
 
-## - OctreeGridDataPointsFilter:
-##     maxSizeByNode: 0.3
+- OctreeGridDataPointsFilter:
+    maxSizeByNode: 0.1
 
 ## - SurfaceCovarianceDataPointsFilter:
 ##     knn: 100

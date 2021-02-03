@@ -71,5 +71,7 @@ std::vector<float> semanticWeights  { 0.0,
                                       0.25,
                                       0.};
 
+std::vector<std::vector<double>> travelledDistance;
+
 
 }

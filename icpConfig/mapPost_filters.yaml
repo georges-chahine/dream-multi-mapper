@@ -14,8 +14,11 @@
 # - DecomposeCovarianceDataPointsFilter:
 #       keepNormals: 1
 
-#- MaxDensityDataPointsFilter:
-#    maxDensity: 10.0
+- MaxDensityDataPointsFilter:
+    maxDensity: 10.0
+
+- OctreeGridDataPointsFilter:
+    maxSizeByNode: 0.1
 
 #- SurfaceNormalDataPointsFilter:
 #    knn: 15

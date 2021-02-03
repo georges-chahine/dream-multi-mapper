@@ -61,7 +61,7 @@ public:
     std::vector<double> getTimeLimits(std::vector<std::vector<double>>& timeRange);
     std::uint32_t checkPointLabel(int& r, int& g, int& b);
     Eigen::Matrix4d parseTFcontainer(TFcontainer& container, std::string& sensor_frame, std::string& base_link);
-    void readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic);
+    void readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic);
     void read_directory(const std::string& name, stringvec& v);
     std::vector<std::vector<double>> localDataFilter(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius );
     void timeDataFilter(Datacontainer& dataContainer, std::vector<std::vector<double>>& timeRange, Datacontainer& output);

@@ -128,7 +128,7 @@ int main()
         //std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic);
+        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic);
         delete Io;
     }
 
