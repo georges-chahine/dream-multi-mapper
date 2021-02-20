@@ -94,7 +94,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     TP T_to_map_from_new = TP::Identity(4,4); // assumes 3D
 
     //-----------------------------------------------------------------------------/////////////////////////////////---------------------------/
-  /*  for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
+    /*  for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
             pcContainer.XYZRGBL[i].points[j].x =pcContainer.XYZRGBL[i].points[j].x-gpsUTMContainer.vect[i][1];
             pcContainer.XYZRGBL[i].points[j].y =pcContainer.XYZRGBL[i].points[j].y-gpsUTMContainer.vect[i][2];
@@ -116,7 +116,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     Eigen::Affine3d transformPrevRot= Eigen::Affine3d::Identity();
 
     Eigen::Affine3d transformICP= Eigen::Affine3d::Identity();
-   // double xOff=0; double yOff=0; double zOff=0;
+    // double xOff=0; double yOff=0; double zOff=0;
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
 
         Eigen::Quaternion<double> rotation;
@@ -295,17 +295,31 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
                 T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
 
-                for (int n=0; n<2; n++){
 
-                    if (!T_to_map_from_new.isIdentity(0.01)){break;}
-                    T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
-                }
             }
             catch (PM::ConvergenceError& error)
             {
                 std::cout << "ERROR PM::ICP failed to converge: " << std::endl;
                 std::cout << "   " << error.what() << std::endl;
                 continue;
+            }
+
+            for (int n=0; n<2; n++){
+
+                if (!T_to_map_from_new.isIdentity(0.01)){break;}
+
+                try
+                {
+                    T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
+                }
+
+                catch (PM::ConvergenceError& error)
+                {
+                    std::cout << "ERROR PM::ICP failed to converge: " << std::endl;
+                    std::cout << "   " << error.what() << std::endl;
+                    continue;
+                }
+
             }
 
             // This is not necessary in this example, but could be
@@ -415,7 +429,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     mapPointCloud = maxDensitySubsample->filter(mapPointCloud);
     DP mapPointCloud2=mapPointCloud;
 
-   mapPointCloud2 = rigidTrans->compute(mapPointCloud2, (transformRot0.matrix()*pc2base).cast <float> ());
+    mapPointCloud2 = rigidTrans->compute(mapPointCloud2, (transformRot0.matrix()*pc2base).cast <float> ());
 
 
     //  mapPointCloud.save("map.vtk");
