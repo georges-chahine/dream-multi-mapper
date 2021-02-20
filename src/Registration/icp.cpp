@@ -310,6 +310,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
                 try
                 {
+                    const TP prior=T_to_map_from_new;
                     T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
                 }
 
