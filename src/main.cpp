@@ -65,6 +65,14 @@ int main()
     }
 
 
+    std::string closeLoopstr = config["closeLoop"].as<std::string>();
+    bool closeLoopFlag=false;
+    if (closeLoopstr=="True" || closeLoopstr=="true")
+    {
+        closeLoopFlag=true;
+    }
+
+
 
     std::string computeProbDynamicstr = config["icpComputeProbDynamic"].as<std::string>();
     bool computeProbDynamic=false;
@@ -128,7 +136,7 @@ int main()
         //std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic);
+        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag);
         delete Io;
     }
 

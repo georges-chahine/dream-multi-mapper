@@ -294,6 +294,12 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 const TP prior = T_to_map_from_new*initialEstimate.matrix().cast<float>();
 
                 T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
+
+                for (int n=0; n<2; n++){
+
+                    if (!T_to_map_from_new.isIdentity(0.01)){break;}
+                    T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
+                }
             }
             catch (PM::ConvergenceError& error)
             {
