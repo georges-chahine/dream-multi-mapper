@@ -791,7 +791,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                 timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
 
-                if (firstLoopFlag){
+                if (firstLoopFlag&&timeRange.size()>1){
                     timeRange[0]=timeRange[1];
 
                 }
