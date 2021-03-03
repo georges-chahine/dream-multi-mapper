@@ -740,7 +740,8 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             {
                 double distTemp=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3],2));
                 double distTemp0=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[0][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[0][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[0][3],2));
-                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2], distTemp, distTemp0};
+                double cTime=gpsUTMContainer.vect[i][0];
+                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2], distTemp, distTemp0, cTime};
                 travelledDistance.push_back(tempVec);
 
             }
@@ -779,7 +780,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
 
             std::vector<double> UTM_ref {travelledDistance[i][0], travelledDistance[i][1]};
-
+            double timeRef=travelledDistance[i][4];
             //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
             std::cout <<"Applying local maps..."<<std::endl;
 
@@ -795,20 +796,40 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     timeRange[0]=timeRange[1];
 
                 }
+                else{
+
+                    double lowestTimeDiff=99999;
+                    unsigned int chosenIdx=0;
+                    for (unsigned int j=0; j<timeRange.size();j++){
+
+                        double timeDiff=abs(timeRef-timeRef);
+
+                        if (timeDiff<lowestTimeDiff){
+
+                            chosenIdx=j;
+
+
+                        }
+
+                    }
+
+                    timeRange[0]=timeRange[chosenIdx];
+                }
+
 
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;
                 if (!topics[3].empty()){
                     rtkUTMContainer=rtkContainer;
-                    for (unsigned int i=0; i< rtkUTMContainer.vect.size(); i++){
+                    for (unsigned int k=0; k< rtkUTMContainer.vect.size(); k++){
                         geographic_msgs::GeoPoint geo_pt;
-                        geo_pt.latitude = rtkUTMContainer.vect[i][1];
-                        geo_pt.longitude= rtkUTMContainer.vect[i][2];
-                        geo_pt.altitude = rtkUTMContainer.vect[i][3];
+                        geo_pt.latitude = rtkUTMContainer.vect[k][1];
+                        geo_pt.longitude= rtkUTMContainer.vect[k][2];
+                        geo_pt.altitude = rtkUTMContainer.vect[k][3];
                         geodesy::UTMPoint utm_pt(geo_pt);
-                        rtkUTMContainer.vect[i][1]=utm_pt.northing;
-                        rtkUTMContainer.vect[i][2]=utm_pt.easting;
-                        rtkUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
+                        rtkUTMContainer.vect[k][1]=utm_pt.northing;
+                        rtkUTMContainer.vect[k][2]=utm_pt.easting;
+                        rtkUTMContainer.vect[k][3]=- utm_pt.altitude; //UTM-NED
                     }
                     // timeDataFilter(rtkUTMContainer, timeRange, rtkLocalUTMContainer);
                 }
