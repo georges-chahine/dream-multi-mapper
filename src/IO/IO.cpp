@@ -802,7 +802,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     unsigned int chosenIdx=0;
                     for (unsigned int j=0; j<timeRange.size();j++){
 
-                        double timeDiff=abs(timeRef-timeRef);
+                        double timeDiff=abs(timeRef-timeRange[i][0]);
 
                         if (timeDiff<lowestTimeDiff){
 
