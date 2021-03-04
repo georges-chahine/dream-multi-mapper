@@ -96,8 +96,8 @@ std::vector<double> IO::getTimeLimits(std::vector<std::vector<double>>& timeRang
         }
     }
     std::cout<<"size is "<<timeRange[index].size()<<std::endl;
-    double lowerTh=timeRange[index][0];
-    double upperTh=timeRange[index].back();
+    double lowerTh=timeRange[0][0];//was [index][0]
+    double upperTh=timeRange[0].back(); //was [index].back();
     return std::vector<double>{lowerTh, upperTh};
 }
 // Returns interpolated value at x from parallel arrays ( xData, yData )
@@ -802,7 +802,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     unsigned int chosenIdx=0;
                     for (unsigned int j=0; j<timeRange.size();j++){
 
-                        double timeDiff=abs(timeRef-timeRange[i][0]);
+                        double timeDiff=abs(timeRef-timeRange[j][0]);
 
                         if (timeDiff<lowestTimeDiff){
 
