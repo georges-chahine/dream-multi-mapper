@@ -58,7 +58,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
             distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
             //     std::cout<<"distance differential is "<<distance<<std::endl;
             if (init==false) {distanceDifferential=0;}
-            if (distanceDifferential<distanceReset || (gpsData.vect[i][0]-last)<timeOut || init==false)
+            if (distanceDifferential<distanceReset || (gpsData.vect[i][0]-lastTime)<timeOut || init==false)
             {
                 timeRange[rangeIndex].push_back(gpsData.vect[i][0]);
                 init=true;
