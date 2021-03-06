@@ -762,7 +762,13 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         double elapsedTemp=999999;
         std::string selection;
         for (int i=0; i<travelledDistance.size(); i++){
+            if (!selection.empty()){
+                if (selection=="exit"){
 
+                    continue;
+                }
+
+            }
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
             if (elapsedTemp>autoDist && travelledDistance[i][3] > 10 ){    //query at least 10 meters from the starting point
@@ -949,8 +955,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                     std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
 
-                    std::cout<<"Selection:"<<std::endl;
-                    if (selection.empty()){
+
+                    while (selection.empty() || selection!="exit" || selection !="semantic_icp" ){
+                        std::cout<<"Selection:"<<std::endl;
                         std::cin >> selection;
                     }
 
