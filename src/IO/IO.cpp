@@ -800,7 +800,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
 
                 if (firstLoopFlag&&timeRange.size()>1){
-                    if (timeRange[1].size>50)  //5 seconds
+                    if (timeRange[1].size()>50)  //5 seconds
                     {timeRange[0]=timeRange[1];}
 
                 }
