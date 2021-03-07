@@ -980,7 +980,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
 
 
-                    while (selection.empty() || selection!="exit" || selection !="semantic_icp" ){
+                    while (selection.empty() ||( selection!="exit" && selection !="semantic_icp") ){
                         std::cout<<"Selection:"<<std::endl;
                         std::cin >> selection;
                     }
