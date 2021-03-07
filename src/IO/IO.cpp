@@ -750,6 +750,8 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     }
     double totalDist=0;
     int localCounter=0;
+    bool debug=true;
+    double debugAt=1000;
     //generate list of lat lon with distances
     //then iterate on that list while changing file names
     if (autoGenerateMaps){
@@ -763,6 +765,12 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         std::string selection;
         for (int i=0; i<travelledDistance.size(); i++){
             totalDist=travelledDistance[i][2]+totalDist;
+
+            if (debug){
+
+                if (totalDist<debugAt){continue;}
+            }
+
             if (!selection.empty()){
                 if (selection=="exit"){
 
