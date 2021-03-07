@@ -732,7 +732,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         {
 
             if (i==0){
-                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2],0,0};
+                std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2],0,0,0};
 
                 travelledDistance.push_back(tempVec);
             }
@@ -748,7 +748,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         }
 
     }
-
+    double totalDist=0;
     int localCounter=0;
     //generate list of lat lon with distances
     //then iterate on that list while changing file names
@@ -762,6 +762,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         double elapsedTemp=999999;
         std::string selection;
         for (int i=0; i<travelledDistance.size(); i++){
+            totalDist=travelledDistance[i][2]+totalDist;
             if (!selection.empty()){
                 if (selection=="exit"){
 
@@ -803,23 +804,46 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                 }
                 else{
+                    if (mapNumber==0){
+                        double lowestTimeDiff=99999;
+                        unsigned int chosenIdx=0;
+                        for (unsigned int j=0; j<timeRange.size();j++){
 
-                    double lowestTimeDiff=99999;
-                    unsigned int chosenIdx=0;
-                    for (unsigned int j=0; j<timeRange.size();j++){
+                            double timeDiff=abs(timeRef-timeRange[j][0]);
 
-                        double timeDiff=abs(timeRef-timeRange[j][0]);
+                            if (timeDiff<lowestTimeDiff){
+                                lowestTimeDiff=timeDiff;
+                                chosenIdx=j;
 
-                        if (timeDiff<lowestTimeDiff){
-                            lowestTimeDiff=timeDiff;
-                            chosenIdx=j;
 
+                            }
 
                         }
 
+                        timeRange[0]=timeRange[chosenIdx];
                     }
+                    else
+                    {
+                        std::cout<<"timeRange size is "<<timeRange.size()<<std::endl;
+                        std::cout<<"timeRange[0] size is "<<timeRange[0].size()<<std::endl;
+                        std::cout<<"timeRange[1] size is "<<timeRange[1].size()<<std::endl;
 
-                    timeRange[0]=timeRange[chosenIdx];
+                        if  (totalDist>200 && timeRange.size()>1){
+
+
+                            if (timeRange[1].size()>30)   //at least 3 seconds of recording to create a map (50 elements at 10 hz)
+                            {
+                                timeRange[0]=timeRange[1];
+                            }
+
+                        }
+
+
+
+
+
+
+                    }
                 }
 
 
