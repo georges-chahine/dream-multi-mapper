@@ -39,8 +39,8 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
     std::vector<double> emptyVec;
     timeRange.push_back(emptyVec);
     double timeOut=8.0;
-    double distanceDifferential=0;
-    double distanceReset=10.0;
+    //double distanceDifferential=0;
+    double distanceReset=30.0;
     double lastTime=-999999999999999999;
     unsigned int rangeIndex=0;
     bool init=false;
@@ -55,10 +55,10 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
         if (distance<(radius*2)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
-            distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
+        //    distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
             //     std::cout<<"distance differential is "<<distance<<std::endl;
-            if (init==false) {distanceDifferential=0;}
-            if (distanceDifferential<distanceReset || (gpsData.vect[i][0]-lastTime)<timeOut || init==false)
+        //    if (init==false) {distanceDifferential=0;}
+            if ((gpsData.vect[i][0]-lastTime)<timeOut || init==false)
             {
                 timeRange[rangeIndex].push_back(gpsData.vect[i][0]);
                 init=true;
@@ -751,7 +751,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     double totalDist=0;
     int localCounter=0;
     bool debug=true;
-    double debugAt=1000;
+    double debugAt=1700;
     //generate list of lat lon with distances
     //then iterate on that list while changing file names
     if (autoGenerateMaps){
@@ -780,7 +780,10 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             }
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
-            if (elapsedTemp>autoDist && travelledDistance[i][3] > 10 ){    //query at least 10 meters from the starting point
+            if ( elapsedTemp>autoDist  && travelledDistance[i][3] > autoDist ) {    //query at least 10 meters from the starting point
+
+
+
                 elapsedTemp=0;
 
             }
@@ -788,6 +791,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             else
 
             {
+                if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
                 continue;
 
             }
