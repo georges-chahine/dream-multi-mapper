@@ -840,7 +840,8 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     else
                     {
                         std::cout<<"timeRange size is "<<timeRange.size()<<std::endl;
-
+                        std::cout.precision(20);
+                        std::cout<<std::setprecision(20);
                         for  (int mm=0; mm<timeRange.size(); mm++){
                             std::cout<<"timeRange["<<mm<<"] size is "<<timeRange[mm].size()<<std::endl;
                             std::cout<<"timeRange["<<mm<<"] starts at "<<timeRange[mm][0]<<std::endl;
