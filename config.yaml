@@ -10,6 +10,8 @@ semantics: "True"
 semanticPtCloudTopic: "/rslidar_semantics"
 sourceBags:
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/200803/1/noCam/"
+- "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/201026/noCam/"
+- "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/2010/noCam/"
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/201118/noCam/"
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/201210/noCam/"
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/210115_2/noCam/"
