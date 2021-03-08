@@ -749,7 +749,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
     }
     double totalDist=0;
+
     int localCounter=0;
+        int tempCounter=0;
     bool debug=false;
     double debugAt=1700;
     //generate list of lat lon with distances
@@ -857,6 +859,10 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
 
                     }
+                    std::cout<<"counter is "<<tempCounter<<std::endl;
+                    std::cout<<std::endl;
+                            tempCounter++;
+                    break;
                 }
 
 
