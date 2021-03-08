@@ -50,11 +50,12 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
     {
         std::cout.precision(20);
         std::cout<<std::setprecision(20);
-        std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<std::endl;
+
         double x=gpsData.vect[i][1]; double y=gpsData.vect[i][2]; double z=gpsData.vect[i][3];
         double distance=sqrt(pow(UTM_ref[0]-gpsData.vect[i][1],2)+pow(UTM_ref[1]-gpsData.vect[i][2],2));
         //    std::cout<<"distance is"<<distance<<std::endl;
         //    std::cout<<"radius is"<<radius<<std::endl;
+          std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
         if (distance<(radius*2)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
