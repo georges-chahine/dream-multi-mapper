@@ -39,7 +39,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
     std::vector<double> emptyVec;
     timeRange.push_back(emptyVec);
     double timeOut=8.0;
-    //double distanceDifferential=0;
+    double distanceDifferential=0;
     double distanceReset=30.0;
     double lastTime=-999999999999999999;
     unsigned int rangeIndex=0;
@@ -55,10 +55,10 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
         if (distance<(radius*2)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
-        //    distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
+            distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
             //     std::cout<<"distance differential is "<<distance<<std::endl;
-        //    if (init==false) {distanceDifferential=0;}
-            if ((gpsData.vect[i][0]-lastTime)<timeOut || init==false)
+            //    if (init==false) {distanceDifferential=0;}
+            if (distanceDifferential<distanceReset||(gpsData.vect[i][0]-lastTime)<timeOut || init==false)
             {
                 timeRange[rangeIndex].push_back(gpsData.vect[i][0]);
                 init=true;
@@ -751,7 +751,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     double totalDist=0;
 
     int localCounter=0;
-        int tempCounter=0;
+    int tempCounter=0;
     bool debug=false;
     double debugAt=1700;
     //generate list of lat lon with distances
@@ -840,8 +840,13 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     else
                     {
                         std::cout<<"timeRange size is "<<timeRange.size()<<std::endl;
-                        std::cout<<"timeRange[0] size is "<<timeRange[0].size()<<std::endl;
-                        std::cout<<"timeRange[1] size is "<<timeRange[1].size()<<std::endl;
+
+                        for  (int mm=0; mm<timeRange.size(); mm++){
+                            std::cout<<"timeRange["<<mm<<"] size is "<<timeRange[mm].size()<<std::endl;
+                            std::cout<<"timeRange["<<mm<<"] starts at "<<timeRange[mm][0]<<std::endl;
+                            std::cout<<"timeRange["<<mm<<"] ends at "<<timeRange[mm].back()<<std::endl;
+                        }
+
 
                         if  (totalDist>200 && timeRange.size()>1){
 
@@ -861,7 +866,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     }
                     std::cout<<"counter is "<<tempCounter<<std::endl;
                     std::cout<<std::endl;
-                            tempCounter++;
+                    tempCounter++;
                     break;
                 }
 
