@@ -750,7 +750,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     }
     double totalDist=0;
     int localCounter=0;
-    bool debug=true;
+    bool debug=false;
     double debugAt=1700;
     //generate list of lat lon with distances
     //then iterate on that list while changing file names
