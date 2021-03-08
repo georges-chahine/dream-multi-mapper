@@ -48,6 +48,8 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
     for (unsigned int i=0; i<gpsData.vect.size(); i++)
 
     {
+        std::cout.precision(20);
+        std::cout<<std::setprecision(20);
         std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<std::endl;
         double x=gpsData.vect[i][1]; double y=gpsData.vect[i][2]; double z=gpsData.vect[i][3];
         double distance=sqrt(pow(UTM_ref[0]-gpsData.vect[i][1],2)+pow(UTM_ref[1]-gpsData.vect[i][2],2));
