@@ -1,5 +1,5 @@
 ---
-gpsTopic: "/vectornav/GPS_INS"
+gpsTopic: "/vectornav/GPS"
 base_link: "base_link"
 tfTopic: "/tf"
 imuTopic: "/vectornav/IMU"

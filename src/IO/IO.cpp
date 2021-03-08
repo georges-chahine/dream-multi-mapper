@@ -55,7 +55,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
         double distance=sqrt(pow(UTM_ref[0]-gpsData.vect[i][1],2)+pow(UTM_ref[1]-gpsData.vect[i][2],2));
         //    std::cout<<"distance is"<<distance<<std::endl;
         //    std::cout<<"radius is"<<radius<<std::endl;
-          std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
+    //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
         if (distance<(radius*2)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
@@ -785,27 +785,18 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 }
 
             }
-            if (tempCounter>4) {continue;}
+          //  if (tempCounter>4) {continue;}
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
             if ( elapsedTemp>autoDist  && travelledDistance[i][3] > autoDist ) {    //query at least 10 meters from the starting point
 
-
-
                 elapsedTemp=0;
-
             }
-
             else
-
             {
                 if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
                 continue;
-
             }
-
-
-
             std::vector<double> UTM_ref {travelledDistance[i][0], travelledDistance[i][1]};
             double timeRef=travelledDistance[i][4];
             //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
@@ -864,11 +855,6 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                             }
 
                         }
-
-
-
-
-
 
                     }
                     std::cout<<"counter is "<<tempCounter<<std::endl;
