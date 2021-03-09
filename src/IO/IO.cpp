@@ -38,7 +38,7 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
 {  std::vector<std::vector<double>> timeRange;
     std::vector<double> emptyVec;
     timeRange.push_back(emptyVec);
-    double timeOut=20.0;
+    double timeOut=120.0;  //1 minute
     double distanceDifferential=0;
     double distanceReset=30.0;
     double lastTime=-999999999999999999;
@@ -773,7 +773,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     //-----------------------UTM CONVERSION----------------------------
 
     Datacontainer gpsUTMContainer=gpsContainer;
-    double humanSpeed=1.5;
+    double humanSpeed=2;
 
     for (unsigned int i=0; i< gpsUTMContainer.vect.size(); i++){
         geographic_msgs::GeoPoint geo_pt;
@@ -796,7 +796,6 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
             if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])>maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]+maxDisp/2;}
             if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])<-maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]-maxDisp/2;}
-
 
         }
         if (mapNumber==0)
@@ -855,17 +854,19 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             //  if (tempCounter>4) {continue;}
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
-            if ( elapsedTemp>autoDist  && travelledDistance[i][3] > autoDist ) {    //query at least 10 meters from the starting point
+            if ( elapsedTemp>autoDist  && travelledDistance[i][3] > radius ) {    //query at least 10 meters from the starting point
 
                 elapsedTemp=0;
             }
             else
             {
-                if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
+              //  if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
                 continue;
             }
+
             std::vector<double> UTM_ref {travelledDistance[i][0], travelledDistance[i][1]};
             double timeRef=travelledDistance[i][4];
+
             //-----------------------APPLYING LOCAL CONSTRAINTS----------------------------
             std::cout <<"Applying local maps..."<<std::endl;
 
@@ -928,7 +929,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     std::cout<<std::endl;
                     tempCounter++;
                     prevStamp=timeRange[0][0];
-                    break;
+               //     break;
                 }
 
 
