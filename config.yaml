@@ -31,5 +31,4 @@ icpInputFilters: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/
 icpPostFilters: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/mapPost_filters.yaml"
 icpComputeProbDynamic: "True"
 autoWalkingMode: "True"
-autoWalkingModeRateHz: "10"
 

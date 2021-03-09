@@ -137,9 +137,10 @@ int main()
         //std::cout<<i<<std::endl;
         int mapCounter=i;
         //std::cout<<pathOut<<std::endl;
-        std::ostringstream ss; ss<<(i);
+        std::ostringstream ss;
+        ss<<(i);
         currentPath=pathOut+"/"+ss.str()+"/";
-        //std::cout<<currentPath<<std::endl;
+        std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
         Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
