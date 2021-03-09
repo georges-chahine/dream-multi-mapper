@@ -55,7 +55,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
         double distance=sqrt(pow(UTM_ref[0]-gpsData.vect[i][1],2)+pow(UTM_ref[1]-gpsData.vect[i][2],2));
         //    std::cout<<"distance is"<<distance<<std::endl;
         //    std::cout<<"radius is"<<radius<<std::endl;
-    //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
+        //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
         if (distance<(radius*2)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
@@ -411,7 +411,7 @@ std::uint32_t IO::checkPointLabel(int& r, int& g, int& b)
     //return 0;
 }
 
-void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool closeLoopFlag)
+void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool closeLoopFlag, bool walkingMode)
 {
     stringvec v;
     read_directory(sourceBags, v);
@@ -722,7 +722,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     //-----------------------UTM CONVERSION----------------------------
 
     Datacontainer gpsUTMContainer=gpsContainer;
-
+    double humanSpeed=1.5;
 
     for (unsigned int i=0; i< gpsUTMContainer.vect.size(); i++){
         geographic_msgs::GeoPoint geo_pt;
@@ -733,6 +733,21 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         gpsUTMContainer.vect[i][1]=utm_pt.northing;
         gpsUTMContainer.vect[i][2]=utm_pt.easting;
         gpsUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
+
+        if (walkingMode&&i>0){   //cap velocity to human walking velocity with some flexibility
+            double elapsedT=gpsUTMContainer.vect[i][0]-gpsUTMContainer.vect[i-1][0];
+            double maxDisp=elapsedT*humanSpeed;
+            if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])>maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]+maxDisp;}
+            if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])<-maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]-maxDisp;}
+
+            if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])>maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]+maxDisp;}
+            if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])<-maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]-maxDisp;}
+
+            if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])>maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]+maxDisp/2;}
+            if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])<-maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]-maxDisp/2;}
+
+
+        }
         if (mapNumber==0)
         {
 
@@ -785,7 +800,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 }
 
             }
-          //  if (tempCounter>4) {continue;}
+            //  if (tempCounter>4) {continue;}
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
             if ( elapsedTemp>autoDist  && travelledDistance[i][3] > autoDist ) {    //query at least 10 meters from the starting point

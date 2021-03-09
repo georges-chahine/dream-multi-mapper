@@ -56,6 +56,12 @@ int main()
     {
         RTK=true;
     }
+    std::string walkingStr = config["autoWalkingMode"].as<std::string>();
+    bool walkingMode=false;
+    if (walkingStr=="True" || walkingStr=="true")
+    {
+        walkingMode=true;
+    }
 
     std::string autoMapstr = config["autoGenerateMaps"].as<std::string>();
     bool autoGenerateMaps=false;
@@ -136,7 +142,7 @@ int main()
         //std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag);
+        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
         delete Io;
     }
 
