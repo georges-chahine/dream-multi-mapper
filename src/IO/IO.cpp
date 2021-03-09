@@ -48,7 +48,7 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
     for (unsigned int i=0; i<gpsData.vect.size(); i++)
 
     {
-        if (gpsData.vect[i][0]>prevStamp && prevStamp!=0 ){continue;}
+        if (gpsData.vect[i][0]<prevStamp && prevStamp!=0 ){continue;}
         std::cout.precision(20);
         std::cout<<std::setprecision(20);
 
