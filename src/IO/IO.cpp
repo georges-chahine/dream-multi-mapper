@@ -913,7 +913,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                         }
 
 
-                        if  (totalDist>200 && timeRange.size()>1){
+              /*          if  (totalDist>200 && timeRange.size()>1){
 
 
                             if (timeRange[1].size()>30)   //at least 3 seconds of recording to create a map (50 elements at 10 hz)
@@ -922,7 +922,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                             }
 
                         }
-
+*/
                     }
                     std::cout<<"counter is "<<tempCounter<<std::endl;
                     std::cout<<std::endl;
