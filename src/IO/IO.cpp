@@ -38,7 +38,7 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
 {  std::vector<std::vector<double>> timeRange;
     std::vector<double> emptyVec;
     timeRange.push_back(emptyVec);
-    double timeOut=8.0;
+    double timeOut=20.0;
     double distanceDifferential=0;
     double distanceReset=30.0;
     double lastTime=-999999999999999999;
