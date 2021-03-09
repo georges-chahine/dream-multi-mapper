@@ -788,11 +788,11 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         if (walkingMode&&i>0){   //cap velocity to human walking velocity with some flexibility
             double elapsedT=gpsUTMContainer.vect[i][0]-gpsUTMContainer.vect[i-1][0];
             double maxDisp=elapsedT*humanSpeed;
-       //     if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])>maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]+maxDisp;}
-        //    if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])<-maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]-maxDisp;}
+            //     if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])>maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]+maxDisp;}
+            //    if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])<-maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]-maxDisp;}
 
-          //  if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])>maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]+maxDisp;}
-           // if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])<-maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]-maxDisp;}
+            //  if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])>maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]+maxDisp;}
+            // if (    (gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2])<-maxDisp   ){gpsUTMContainer.vect[i][2]=gpsUTMContainer.vect[i-1][2]-maxDisp;}
 
             //if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])>maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]+maxDisp/2;}
             //if (    (gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3])<-maxDisp/2   ){gpsUTMContainer.vect[i][3]=gpsUTMContainer.vect[i-1][3]-maxDisp/2;}
@@ -927,10 +927,11 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     std::cout<<"counter is "<<tempCounter<<std::endl;
                     std::cout<<std::endl;
                     tempCounter++;
+                    prevStamp=timeRange[0][0];
                     break;
                 }
 
-                prevStamp=timeRange[0][0];
+
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;
                 if (!topics[3].empty()){
