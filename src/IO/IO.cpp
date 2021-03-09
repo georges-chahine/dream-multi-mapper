@@ -34,6 +34,57 @@ void IO::read_directory(const std::string& name, stringvec& v)
 }
 
 
+std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius, double prevStamp)
+{  std::vector<std::vector<double>> timeRange;
+    std::vector<double> emptyVec;
+    timeRange.push_back(emptyVec);
+    double timeOut=8.0;
+    double distanceDifferential=0;
+    double distanceReset=30.0;
+    double lastTime=-999999999999999999;
+    unsigned int rangeIndex=0;
+    bool init=false;
+    double x_0=gpsData.vect[0][1]; double y_0=gpsData.vect[0][2]; double z_0=gpsData.vect[0][3];
+    for (unsigned int i=0; i<gpsData.vect.size(); i++)
+
+    {
+        if (gpsData.vect[i][0]>prevStamp && prevStamp!=0 ){continue;}
+        std::cout.precision(20);
+        std::cout<<std::setprecision(20);
+
+        double x=gpsData.vect[i][1]; double y=gpsData.vect[i][2]; double z=gpsData.vect[i][3];
+        double distance=sqrt(pow(UTM_ref[0]-gpsData.vect[i][1],2)+pow(UTM_ref[1]-gpsData.vect[i][2],2));
+        //    std::cout<<"distance is"<<distance<<std::endl;
+        //    std::cout<<"radius is"<<radius<<std::endl;
+        //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
+        if (distance<(radius*2)){
+            //     std::cout<<"distance2 is"<<distance<<std::endl;
+            //    std::cout<<"radius2 is"<<radius<<std::endl;
+            distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
+            //     std::cout<<"distance differential is "<<distance<<std::endl;
+            //    if (init==false) {distanceDifferential=0;}
+            if (distanceDifferential<distanceReset||(gpsData.vect[i][0]-lastTime)<timeOut || init==false)
+            {
+
+                timeRange[rangeIndex].push_back(gpsData.vect[i][0]);
+                init=true;
+            }
+            else
+            {
+                rangeIndex++;
+                std::vector<double> emptyVec;
+                timeRange.push_back(emptyVec);
+                timeRange[rangeIndex].push_back(gpsData.vect[i][0]);
+            }
+            lastTime=gpsData.vect[i][0];
+            x_0=gpsData.vect[i][1]; y_0=gpsData.vect[i][2]; z_0=gpsData.vect[i][3];
+        }
+
+    }
+    return timeRange;
+}
+
+
 std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius)
 {  std::vector<std::vector<double>> timeRange;
     std::vector<double> emptyVec;
@@ -785,6 +836,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
         double elapsedTemp=999999;
         std::string selection;
+        double prevStamp=0;
         for (int i=0; i<travelledDistance.size(); i++){
             totalDist=travelledDistance[i][2]+totalDist;
 
@@ -823,7 +875,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                 std::vector<std::vector<double>> timeRange;
 
-                timeRange=localDataFilter(gpsUTMContainer, UTM_ref, radius);
+                timeRange=localDataFilterAuto(gpsUTMContainer, UTM_ref, radius, prevStamp);
 
                 if (firstLoopFlag&&timeRange.size()>1){
                     if (timeRange[1].size()>50)  //5 seconds
@@ -878,7 +930,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     break;
                 }
 
-
+                prevStamp=timeRange[0][0];
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;
                 if (!topics[3].empty()){
