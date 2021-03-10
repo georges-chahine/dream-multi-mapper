@@ -929,7 +929,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     std::cout<<std::endl;
                     tempCounter++;
                     prevStamp=timeRange[0][0];
-               //     break;
+                    break;
                 }
 
 
