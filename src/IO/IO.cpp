@@ -1090,7 +1090,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     }
                     if (selection=="semantic_icp" || selection=="all" ){
                         ICP* Icp =new ICP();
-                  //      Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
                         delete Icp;
 
                     }
