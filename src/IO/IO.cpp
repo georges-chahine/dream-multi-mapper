@@ -48,6 +48,15 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
     for (unsigned int i=0; i<gpsData.vect.size(); i++)
 
     {
+
+        if (prevStamp==0){
+
+        timeRange[0].push_back(gpsData.vect[0][0]);  //meh, should be improved, this means we always start around the same position
+
+
+        }
+
+
         if (gpsData.vect[i][0]<prevStamp && prevStamp!=0 ){continue;}
         std::cout.precision(20);
         std::cout<<std::setprecision(20);
@@ -809,6 +818,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             else
             {
                 double distTemp=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3],2));
+
                 double distTemp0=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[0][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[0][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[0][3],2));
                 double cTime=gpsUTMContainer.vect[i][0];
                 std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2], distTemp, distTemp0, cTime};
