@@ -860,7 +860,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             }
             else
             {
-              //  if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
+                //  if (travelledDistance[i][3] < autoDist && totalDist>700){break;}
                 continue;
             }
 
@@ -931,7 +931,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     prevStamp=timeRange[0][0];
 
                 }
-
+                break;
 
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;

@@ -16,6 +16,7 @@ sourceBags:
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/201210/noCam/"
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/210115_2/noCam/"
 - "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/210211/noCam/"
+- "/mnt/dream-storage/Backpack_Dataset/cross-seasonal-semantic-dataset/lake-bPearl/on-foot/210310/noCam/"
 mapRegistration: "gps"
 radius: "35"
 voxelSize: "0.1"
