@@ -817,9 +817,9 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             }
             else
             {
-                double distTemp=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3],2));
+                double distTemp=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[i-1][2],2) ); //+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[i-1][3],2));
 
-                double distTemp0=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[0][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[0][2],2)+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[0][3],2));
+                double distTemp0=sqrt(pow(gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[0][1],2)+pow(gpsUTMContainer.vect[i][2]-gpsUTMContainer.vect[0][2],2)  );  //+ pow(gpsUTMContainer.vect[i][3]-gpsUTMContainer.vect[0][3],2));
                 double cTime=gpsUTMContainer.vect[i][0];
                 std::vector<double> tempVec {gpsUTMContainer.vect[i][1],gpsUTMContainer.vect[i][2], distTemp, distTemp0, cTime};
                 travelledDistance.push_back(tempVec);
