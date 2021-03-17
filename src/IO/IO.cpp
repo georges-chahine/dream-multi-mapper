@@ -35,7 +35,8 @@ void IO::read_directory(const std::string& name, stringvec& v)
 
 
 std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius, double prevStamp)
-{  std::vector<std::vector<double>> timeRange;
+{
+    std::vector<std::vector<double>> timeRange;
     std::vector<double> emptyVec;
     timeRange.push_back(emptyVec);
     double timeOut=60.0;  //1 minute
@@ -45,16 +46,18 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
     unsigned int rangeIndex=0;
     bool init=false;
     double x_0=gpsData.vect[0][1]; double y_0=gpsData.vect[0][2]; double z_0=gpsData.vect[0][3];
-    for (unsigned int i=0; i<gpsData.vect.size(); i++)
-
-    {
-
-        if (prevStamp==0){
+    if (prevStamp==0){
 
         timeRange[0].push_back(gpsData.vect[0][0]);  //meh, should be improved, this means we always start around the same position
 
 
-        }
+    }
+
+    for (unsigned int i=0; i<gpsData.vect.size(); i++)
+
+    {
+
+
 
 
         if (gpsData.vect[i][0]<prevStamp && prevStamp!=0 ){continue;}
