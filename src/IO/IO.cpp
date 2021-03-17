@@ -944,7 +944,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     prevStamp=timeRange[0][0];
 
                 }
-                break;
+           //     break;
 
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;
