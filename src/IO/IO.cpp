@@ -854,7 +854,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
             //  if (tempCounter>4) {continue;}
             elapsedTemp=elapsedTemp+travelledDistance[i][2];
 
-            if ( elapsedTemp>autoDist  && travelledDistance[i][3] > 10 ) {    //query at least 10 meters from the starting point
+            if ( elapsedTemp>autoDist   ) {   // && travelledDistance[i][3] > 10//query at least 10 meters from the starting point
 
                 elapsedTemp=0;
             }
