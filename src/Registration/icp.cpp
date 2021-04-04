@@ -17,6 +17,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     poseStream.precision(16);
     std::string posePath= currentPath + "/" + filename + ".csv" ;
     poseStream.open (posePath.c_str());
+
+
+    std::ofstream timeStream;
+    timeStream.precision(16);
+    std::string timePath= currentPath + "/" + filename + ".txt" ;
+    timeStream.open (timePath.c_str());
+
+
     poseStream <<"%timestamp,x,y,z,qx,qy,qz,qw\n";
     // ---------------------------------------------------------------------------------------------------------------//
     typedef PointMatcher<float> PM;
@@ -406,6 +414,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         Eigen::Matrix3d poseRot=pose.matrix().block(0,0,3,3);
         Eigen::Quaterniond q(poseRot);
         poseStream<<pcContainer.timestamp[i]<<","<<pose.matrix()(0,3)<<","<<pose.matrix()(1,3)<<","<<pose.matrix()(2,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
+        double t=pcContainer.timestamp[i];
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
             double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;
@@ -420,6 +429,8 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[0][2];
             pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[0][3];
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
+            timeStream<<t<<std::endl;
+
         }
         transformPrev=transform;
         transformPrevIcp=transformICP;
@@ -435,6 +446,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
     //  mapPointCloud.save("map.vtk");
     poseStream.close();
+    timeStream.close();
     pcContainer2.XYZRGBL.clear();
     pcContainer2.XYZRGBL.shrink_to_fit();
     std::string fullPath1= currentPath + "/" + filename + ".pcd" ;
