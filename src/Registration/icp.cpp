@@ -11,7 +11,7 @@ ICP::~ICP()
 {
 }
 
-void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool semantics)
+void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool semantics)
 {
     std::ofstream poseStream;
     poseStream.precision(16);
@@ -60,7 +60,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     PM::ICP icp;
 
 
-    PM::DataPointsFilters inputFilters;
+    PM::DataPointsFilters inputFilters, boundingBox;
     PM::DataPointsFilters mapPostFilters;
     if(!icpConfigFilePath.empty())
     {
@@ -79,6 +79,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         std::ifstream ifs(inputFiltersConfigFilePath.c_str());
         inputFilters = PM::DataPointsFilters(ifs);
         std::cout<<"loaded input filter yaml!"<<std::endl;
+        ifs.close();
+    }
+
+    if(!inputFilters2ConfigFilePath.empty())
+    {
+        std::ifstream ifs(inputFilters2ConfigFilePath.c_str());
+        boundingBox = PM::DataPointsFilters(ifs);
+        std::cout<<"loaded input bounding box filter yaml!"<<std::endl;
         ifs.close();
     }
 
@@ -188,7 +196,15 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         //data.addFeature("x", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(0));
         // data.addFeature("y", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(1));
         // data.addFeature("z", pcContainer.XYZRGBL[i].getMatrixXfMap(3,8,0).row(2));
-        // data.addDescriptor("normals", dataNormals);
+        data.addDescriptor("normals", dataNormals);
+
+        Eigen::MatrixXf indices(2,pcContainer.normals[i].getMatrixXfMap(3,8,0).row(0).size());
+        for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
+            indices(0,j)=i;
+            indices(1,j)=j;
+        }
+        data.addDescriptor("indices", indices);
+
         if (semantics)
         {
             Eigen::MatrixXf dataSemantics(1,pcContainer.normals[i].getMatrixXfMap(3,8,0).row(0).size());
@@ -277,6 +293,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             // It is assume that the point cloud is express in sensor frame
             //newCloud = DP::load(list[i].readingFileName);
+            boundingBox.apply(data);
             newCloud=data;
 
             if(computeProbDynamic)
@@ -341,7 +358,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             // Move the new point cloud in the map reference
             newCloud = rigidTrans->compute(newCloud, T_to_map_from_new);
-
+            data = rigidTrans->compute(data, T_to_map_from_new);
             // Merge point clouds to map
 
             mapPointCloud.concatenate(newCloud);
@@ -415,6 +432,41 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         Eigen::Quaterniond q(poseRot);
         poseStream<<pcContainer.timestamp[i]<<","<<pose.matrix()(0,3)<<","<<pose.matrix()(1,3)<<","<<pose.matrix()(2,3)<<","<<q.x()<<","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
         double t=pcContainer.timestamp[i];
+
+        Eigen::MatrixXf indices2;
+        indices2=data.getDescriptorViewByName("indices");
+
+        for (unsigned int j=0; j<indices2.cols();j++){
+
+
+            int idx_i= indices2(0,j);
+            int idx_j= indices2 (1,j);
+
+            double x=pcContainer.XYZRGBL[idx_i].points[idx_j].x;
+            double y=pcContainer.XYZRGBL[idx_i].points[idx_j].y;
+            double z=pcContainer.XYZRGBL[idx_i].points[idx_j].z;
+
+            Eigen::Vector4d pcPoints(x,y,z,1.0);
+            Eigen::Vector4d pcPointsTransformed=pose.matrix()*pcPoints;
+
+            //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
+
+            //transform0*pc2base*
+
+            pcContainer2.XYZRGBL[idx_i].points[idx_j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[0][1];
+            pcContainer2.XYZRGBL[idx_i].points[idx_j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[0][2];
+            pcContainer2.XYZRGBL[idx_i].points[idx_j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[0][3];
+
+
+            pointCloud->points.push_back(pcContainer2.XYZRGBL[idx_i].points[idx_j]);
+
+            timeStream<<t<<std::endl;
+
+            //pointCloudFiltered->points.push_back(pcContainer2.XYZRGBL[idx_i].points[idx_j]);
+
+
+        }
+        /*
         for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
             double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;
@@ -428,10 +480,13 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[0][1];
             pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[0][2];
             pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[0][3];
+
+
             pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
+
             timeStream<<t<<std::endl;
 
-        }
+        }*/
         transformPrev=transform;
         transformPrevIcp=transformICP;
         transformPrevRot.matrix().block(0,0,3,3)=transform.matrix().block(0,0,3,3);

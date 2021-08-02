@@ -38,6 +38,7 @@ int main()
 
     std::string icpConfigFilePath = config["icpConfig"].as<std::string>();
     std::string inputFiltersConfigFilePath = config["icpInputFilters"].as<std::string>();
+    std::string inputFilters2ConfigFilePath = config["boundingBoxFilter"].as<std::string>();
 
     // std::string icpConfigFilePath;  //get path
     //std::cout<<icpConfigFilePath<<std::endl;
@@ -143,7 +144,7 @@ int main()
         std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
+        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
         delete Io;
     }
 

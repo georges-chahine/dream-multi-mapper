@@ -1,0 +1,8 @@
+- BoundingBoxDataPointsFilter:
+    xMin: -1
+    xMax: 1
+    yMin: -1
+    yMax: 1
+    zMin: -1
+    zMax: 2
+    removeInside: 1

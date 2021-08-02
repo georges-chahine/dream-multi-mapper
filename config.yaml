@@ -29,6 +29,7 @@ Coordinates:
 - "6.217961"
 icpConfig: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/icp_param.yaml"
 icpInputFilters: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/input_filters.yaml"
+boundingBoxFilter: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/bounding_input.yaml"
 icpPostFilters: "/home/gpu_user/gchahine/packages/dream-multi-mapper/icpConfig/mapPost_filters.yaml"
 icpComputeProbDynamic: "True"
 autoWalkingMode: "True"
