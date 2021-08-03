@@ -322,7 +322,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
                // T_to_map_from_new0=T_to_map_from_new;
 
-                icpIncrement=transformPrevIcp.inverse()*T_to_map_from_new.cast<double>();
+                icpIncrement.matrix()=transformPrevIcp.matrix().inverse()*T_to_map_from_new.cast<double>();
 
                 icpLog.increments.push_back(icpIncrement);
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
@@ -346,6 +346,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 }
             }
             transformPrevIcp.matrix()=T_to_map_from_new.cast<double>();
+
             // std::cout<<"after correction "<<std::endl;
             // std::cout<<T_to_map_from_new<<std::endl;
 
