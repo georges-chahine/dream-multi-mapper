@@ -321,13 +321,12 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
                // T_to_map_from_new0=T_to_map_from_new;
 
-
-                icpIncrement=T_to_map_from_new.cast <double> ();
+                icpIncrement.matrix()=T_to_map_from_new.cast<double>();
 
                 icpLog.increments.push_back(icpIncrement);
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
-                transformPrevIcp=T_to_map_from_new.cast<double>();
+                transformPrevIcp.matrix()=T_to_map_from_new.cast<double>();
                //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
