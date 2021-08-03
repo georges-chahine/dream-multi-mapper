@@ -16,7 +16,7 @@ public:
 
     typedef PointMatcher<float> PM;
     typedef PM::DataPoints DP;
-    void createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, IO::IcpLogger icpLog, bool semantics);
+    void createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, IO::IcpLogger &icpLog, bool semantics);
 
     //bool compareFunction (std::string a, std::string b);
 

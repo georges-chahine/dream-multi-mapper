@@ -11,7 +11,7 @@ ICP::~ICP()
 {
 }
 
-void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, IO::IcpLogger icpLog, bool semantics)
+void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, IO::IcpLogger &icpLog, bool semantics)
 {
     std::ofstream poseStream;
     poseStream.precision(16);
@@ -311,6 +311,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             // call ICP
             bool foundPrevIcp=false;
             if (icpLog.stamps.size()>0){
+                std::cout<< "found icp logs"<<std::endl;
                 if (icpLog.stamps.back()>pcContainer.timestamp[i]){
                     foundPrevIcp=true;
                     std::cout<< "found previously calculated ICP increment"<<std::endl;
@@ -402,7 +403,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
         //Eigen::Matrix4d pose=transform0.matrix()*pc2base*transformICP.matrix();
 
-        pose.matrix()=transform0.matrix()*pc2base*T_to_map_from_new.cast <double> ();// transformICP.matrix();
+        pose.matrix()=transform0.matrix()*pc2base*T_to_map_from_new.cast<double>();// transformICP.matrix();
 
 
         Eigen::Matrix3d poseRot=pose.matrix().block(0,0,3,3);
