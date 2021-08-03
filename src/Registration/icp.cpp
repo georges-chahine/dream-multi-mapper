@@ -337,7 +337,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                     if (icpLog.stamps[k]==pcContainer.timestamp[i]){
 
                         icpIncrement=icpLog.increments[k];
-                        icpIncrementCum=icpIncrementCum*icpIncrement;
+                        icpIncrementCum=icpIncrement; //icpIncrementCum*icpIncrement;
                         T_to_map_from_new=icpIncrementCum.matrix().cast<float>();
                         break;
 
