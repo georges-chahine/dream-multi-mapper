@@ -312,7 +312,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             bool foundPrevIcp=false;
             if (icpLog.stamps.size()>0){
                 std::cout<< "found icp logs"<<std::endl;
-                if (icpLog.stamps.back()>pcContainer.timestamp[i]){
+                if (icpLog.stamps.back()>=pcContainer.timestamp[i]){
                     foundPrevIcp=true;
                     std::cout<< "found previously calculated ICP increment"<<std::endl;
                 }
@@ -352,7 +352,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
                 transformPrevIcp=transformICP;
-                T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
+               //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
 
