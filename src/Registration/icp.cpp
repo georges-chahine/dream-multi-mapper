@@ -131,7 +131,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     Eigen::Affine3d transformRot0= Eigen::Affine3d::Identity();
     Eigen::Affine3d transformPrevRot= Eigen::Affine3d::Identity();
 
-    Eigen::Affine3d transformICP= Eigen::Affine3d::Identity();
+    //Eigen::Affine3d transformICP= Eigen::Affine3d::Identity();
     // double xOff=0; double yOff=0; double zOff=0;
     for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
 
@@ -267,32 +267,8 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             std::cout<<"---------------------------"<<std::endl;
 
-            // std::cout<<"REF Features is "<<ref.features<<std::endl;
-            //  std::cout<<"REF Features size is "<<ref.features.size()<<std::endl;
-            //   std::cout<<"matrix points size is "<<  pcContainer.XYZRGBL[i-1].points.size()<<std::endl;
-            // std::cout<<"matrix size is "<<  pcContainer.XYZRGBL[i-1].getMatrixXfMap().size()<<std::endl;
-            //std::cout<<"original matrix is "<<std::endl;
-            // std::cout<<pcContainer.XYZRGBL[i-1].getMatrixXfMap(3,8,0).row(0)<<std::endl;
-            //     std::cout<<pcContainer.XYZRGBL[i-1].getMatrixXfMap(3,8,0).row(0).size()<<std::endl;
-            //    std::cout<<pcContainer.XYZRGBL[i-1].getMatrixXfMap(3,8,0).row(1).size()<<std::endl;
-            //     std::cout<<pcContainer.XYZRGBL[i-1].getMatrixXfMap(3,8,0).row(2).size()<<std::endl;
-            //std::cout<<"x1 is "<<  pcContainer.XYZRGBL[i-1].points[0].x<<std::endl;
-            //  std::cout<<"x2 is "<<  pcContainer.XYZRGBL[i-1].points[1].x<<std::endl;
-            // std::cout<<"y1 is "<<  pcContainer.XYZRGBL[i-1].points[0].y<<std::endl;
-            //  std::cout<<"z1 is "<<  pcContainer.XYZRGBL[i-1].points[0].z<<std::endl;
-
             initialEstimate=transformPrev.inverse()*transform;
 
-            //initialEstimate=transform0.inverse()*transform;
-
-
-            //---------------------------------------------------------------------------------------------------------//
-            //            for(unsigned i=0; i < list.size(); i++)
-            //           {
-            //  cout << "---------------------\nLoading: " << list[i].readingFileName << endl;
-
-            // It is assume that the point cloud is express in sensor frame
-            //newCloud = DP::load(list[i].readingFileName);
             boundingBox.apply(data);
             newCloud=data;
 
@@ -344,14 +320,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 //std::cout<<T_to_map_from_new<<std::endl;
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
                // T_to_map_from_new0=T_to_map_from_new;
-                transformICP.matrix()=T_to_map_from_new.cast <double> ();
 
-                icpIncrement=transformPrevIcp.inverse()*transformICP;
+
+                icpIncrement=T_to_map_from_new.cast <double> ();
 
                 icpLog.increments.push_back(icpIncrement);
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
-                transformPrevIcp=transformICP;
+                transformPrevIcp=T_to_map_from_new.cast<double>();
                //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
@@ -372,7 +348,6 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             // std::cout<<"after correction "<<std::endl;
             // std::cout<<T_to_map_from_new<<std::endl;
 
-
             // Move the new point cloud in the map reference
             newCloud = rigidTrans->compute(newCloud, T_to_map_from_new);
             data = rigidTrans->compute(data, T_to_map_from_new);
@@ -382,29 +357,11 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             mapPostFilters.apply(mapPointCloud);
 
 
-
-            PM::TransformationParameters T=T_to_map_from_new;
-            // PM::TransformationParameters T=initialEstimate.matrix().cast<float>();
-            //  std::cout<<"correction is"<<correction<<std::endl;
-            //  T=initialEstimate.matrix().cast<float>()* correction ;//
-            //T=initialEstimate.matrix().cast <float>();
-
-            // std::cout<<"REF Features SIZE is "<<ref.features.size()<<std::endl;
-            // std::cout<<"DATAOUT Features SIZE is "<<data_out.features.size()<<std::endl;
-
-            // Eigen::Matrix4d T= Eigen::Matrix4d::Identity();
-            //transformICP.matrix()= transformICP.matrix()*T.cast <double> ();
-
         }
-
-
-
-
 
         //Eigen::Matrix4d pose=transform0.matrix()*pc2base*transformICP.matrix();
 
         pose.matrix()=transform0.matrix()*pc2base*T_to_map_from_new.cast<double>();// transformICP.matrix();
-
 
         Eigen::Matrix3d poseRot=pose.matrix().block(0,0,3,3);
         Eigen::Quaterniond q(poseRot);
