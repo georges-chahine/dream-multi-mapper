@@ -117,6 +117,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
         }
     }
 */
+    bool icpInit=false;
     IO::pCloudcontainer pcContainer2=pcContainer;
     std::cout<<"ICP Map Registration...."<<std::endl;
     pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pointCloud (new pcl::PointCloud<pcl::PointXYZRGBL>);
@@ -321,12 +322,12 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
                // T_to_map_from_new0=T_to_map_from_new;
 
-                icpIncrement.matrix()=T_to_map_from_new.cast<double>();
+                icpIncrement=transformPrevIcp.inverse()*T_to_map_from_new.cast<double>();
 
                 icpLog.increments.push_back(icpIncrement);
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
-                transformPrevIcp.matrix()=T_to_map_from_new.cast<double>();
+
                //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
@@ -337,13 +338,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                     if (icpLog.stamps[k]==pcContainer.timestamp[i]){
 
                         icpIncrement=icpLog.increments[k];
-                        icpIncrementCum=icpIncrement; //icpIncrementCum*icpIncrement;
+                        icpIncrementCum=icpIncrementCum*icpIncrement;
                         T_to_map_from_new=icpIncrementCum.matrix().cast<float>();
                         break;
 
                     }
                 }
             }
+            transformPrevIcp.matrix()=T_to_map_from_new.cast<double>();
             // std::cout<<"after correction "<<std::endl;
             // std::cout<<T_to_map_from_new<<std::endl;
 
