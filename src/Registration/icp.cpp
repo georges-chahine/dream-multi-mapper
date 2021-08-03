@@ -352,7 +352,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
                 transformPrevIcp=transformICP;
-                T_to_map_from_new=T_to_map_from_new*icpIncrementCum.matrix().cast<float>();
+                T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
 
@@ -362,7 +362,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                     if (icpLog.stamps[k]==pcContainer.timestamp[i]){
 
                         icpIncrement=icpLog.increments[k];
-                        icpIncrementCum=icpIncrement*icpIncrementCum;
+                        icpIncrementCum=icpIncrementCum*icpIncrement;
                         T_to_map_from_new=icpIncrementCum.matrix().cast<float>();
                         break;
 
