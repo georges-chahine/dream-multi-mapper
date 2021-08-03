@@ -45,6 +45,11 @@ public:
 
     } ;
 
+    struct IcpLogger{
+        std::vector<Eigen::Affine3d> increments;
+        std::vector<double> stamps;
+    };
+
     struct pCloudcontainer {
         std::vector<pcl::PointCloud<pcl::PointXYZRGBL>> XYZRGBL;
         std::vector<pcl::PointCloud<pcl::Normal>> normals;
@@ -63,8 +68,8 @@ public:
     Eigen::Matrix4d parseTFcontainer(TFcontainer& container, std::string& sensor_frame, std::string& base_link);
     void readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool closeLoopFlag, bool walkingMode);
     void read_directory(const std::string& name, stringvec& v);
-    std::vector<std::vector<double>> localDataFilter(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius );
-    std::vector<std::vector<double>> localDataFilterAuto(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius, double prevStamp );
+    std::vector<std::vector<double>> localDataFilter(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius);
+    std::vector<std::vector<double>> localDataFilterAuto(Datacontainer& gpsData, std::vector<double>& UTM_ref, double& radius, double prevStamp);
     void timeDataFilter(Datacontainer& dataContainer, std::vector<std::vector<double>>& timeRange, Datacontainer& output);
     void timeDataFilter(pCloudcontainer& pcContainer, std::vector<std::vector<double>>& timeRange, pCloudcontainer& output);
     //bool compareFunction (std::string a, std::string b);

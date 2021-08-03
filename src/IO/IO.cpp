@@ -839,6 +839,11 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
     double debugAt=1700;
     //generate list of lat lon with distances
     //then iterate on that list while changing file names
+
+
+    IcpLogger icpLog;
+
+
     if (autoGenerateMaps){
         bool firstLoopFlag=false;
         if (closeLoopFlag){
@@ -944,7 +949,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     prevStamp=timeRange[0][0];
 
                 }
-           //     break;
+                //     break;
 
                 Datacontainer rtkUTMContainer;
                 // Datacontainer rtkLocalUTMContainer;
@@ -1098,12 +1103,12 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                     }
                     if (selection=="icp_local" || selection=="all" ){
                         ICP* Icp =new ICP();
-                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
+                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
                         delete Icp;
                     }
                     if (selection=="semantic_icp" || selection=="all" ){
                         ICP* Icp =new ICP();
-                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath,  inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath,  inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
                         delete Icp;
 
                     }
@@ -1299,7 +1304,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
                 if (selection=="icp_local" || selection=="all" ){
                     ICP* Icp =new ICP();
-                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, false);
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
                     delete Icp;
                 }
 
@@ -1308,7 +1313,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 if (selection=="semantic_icp" || selection=="all" ){
 
                     ICP* Icp =new ICP();
-                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, semantics);
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
                     delete Icp;
 
                 }

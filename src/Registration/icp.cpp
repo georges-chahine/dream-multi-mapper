@@ -11,14 +11,12 @@ ICP::~ICP()
 {
 }
 
-void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool semantics)
+void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matrix4d pc2base,Eigen::Matrix4d gps2base, IO::Datacontainer imuContainer, IO::pCloudcontainer pcContainer, IO::Datacontainer gpsUTMContainer, std::string filename, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, IO::IcpLogger icpLog, bool semantics)
 {
     std::ofstream poseStream;
     poseStream.precision(16);
     std::string posePath= currentPath + "/" + filename + ".csv" ;
     poseStream.open (posePath.c_str());
-
-
     std::ofstream timeStream;
     timeStream.precision(16);
     std::string timePath= currentPath + "/" + filename + ".txt" ;
@@ -108,6 +106,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
     PM::DataPoints mapPointCloud, newCloud;
     TP T_to_map_from_new = TP::Identity(4,4); // assumes 3D
+    TP T_to_map_from_new0 = TP::Identity(4,4); // assumes 3D
 
     //-----------------------------------------------------------------------------/////////////////////////////////---------------------------/
     /*  for (unsigned int i=0; i<pcContainer.timestamp.size();i++){
@@ -127,6 +126,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     Eigen::Affine3d transformPrev= Eigen::Affine3d::Identity();
     Eigen::Affine3d initialEstimate= Eigen::Affine3d::Identity();
     Eigen::Affine3d icpIncrement= Eigen::Affine3d::Identity();
+    Eigen::Affine3d icpIncrementCum= Eigen::Affine3d::Identity();
     Eigen::Affine3d pose= Eigen::Affine3d::Identity();
     Eigen::Affine3d transformRot0= Eigen::Affine3d::Identity();
     Eigen::Affine3d transformPrevRot= Eigen::Affine3d::Identity();
@@ -309,36 +309,29 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             }
 
             // call ICP
-            try
-            {
-                // We use the last transformation as a prior
-                // this assumes that the point clouds were recorded in
-                // sequence.
-                //const TP prior = initialEstimate.matrix().cast<float>();
-                //const TP prior = T_to_map_from_new;
-                const TP prior = T_to_map_from_new*initialEstimate.matrix().cast<float>();
-
-                T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
-
-
-            }
-            catch (PM::ConvergenceError& error)
-            {
-                std::cout << "ERROR PM::ICP failed to converge: " << std::endl;
-                std::cout << "   " << error.what() << std::endl;
-                continue;
-            }
-
-            for (int n=0; n<2; n++){
-
-                if (!T_to_map_from_new.isIdentity(0.01)){break;}
-
-                try
-                {
-                    const TP prior=T_to_map_from_new;
-                    T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
+            bool foundPrevIcp=false;
+            if (icpLog.stamps.size()>0){
+                if (icpLog.stamps.back()>pcContainer.timestamp[i]){
+                    foundPrevIcp=true;
+                    std::cout<< "found previously calculated ICP increment"<<std::endl;
                 }
 
+            }
+            if (!foundPrevIcp){
+                try
+                {
+                    // We use the last transformation as a prior
+                    // this assumes that the point clouds were recorded in
+                    // sequence.
+                    //const TP prior = initialEstimate.matrix().cast<float>();
+                    //const TP prior = T_to_map_from_new;
+
+                    const TP prior = T_to_map_from_new0*initialEstimate.matrix().cast<float>();
+
+                    T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
+
+
+                }
                 catch (PM::ConvergenceError& error)
                 {
                     std::cout << "ERROR PM::ICP failed to converge: " << std::endl;
@@ -346,15 +339,38 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                     continue;
                 }
 
+                //std::cout<<"before correction "<<std::endl;
+                //std::cout<<T_to_map_from_new<<std::endl;
+                T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
+                T_to_map_from_new0=T_to_map_from_new;
+                transformICP.matrix()=T_to_map_from_new.cast <double> ();
+
+                icpIncrement=transformPrevIcp.inverse()*transformICP;
+
+                icpLog.increments.push_back(icpIncrement);
+                icpLog.stamps.push_back(pcContainer.timestamp[i]);
+
+                transformPrevIcp=transformICP;
+                T_to_map_from_new=T_to_map_from_new*icpIncrementCum.matrix().cast<float>();
+
             }
 
-            // This is not necessary in this example, but could be
-            // useful if the same matrix is composed in the loop.
-            //std::cout<<"before correction "<<std::endl;
-            //std::cout<<T_to_map_from_new<<std::endl;
-            T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
+            else{
+                for (int k=0; k<icpLog.increments.size(); k++){
+
+                    if (icpLog.stamps[k]==pcContainer.timestamp[i]){
+
+                        icpIncrement=icpLog.increments[k];
+                        icpIncrementCum=icpIncrement*icpIncrementCum;
+                        T_to_map_from_new=icpIncrementCum.matrix().cast<float>();
+                        break;
+
+                    }
+                }
+            }
             // std::cout<<"after correction "<<std::endl;
             // std::cout<<T_to_map_from_new<<std::endl;
+
 
             // Move the new point cloud in the map reference
             newCloud = rigidTrans->compute(newCloud, T_to_map_from_new);
@@ -363,49 +379,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             mapPointCloud.concatenate(newCloud);
             mapPostFilters.apply(mapPointCloud);
-            // Clean the map
 
-
-            // Save the map at each iteration
-            //   stringstream outputFileNameIter;
-            //  outputFileNameIter << outputFileName << "_" << i << ".vtk";
-
-            //  cout << "outputFileName: " << outputFileNameIter.str() << endl;
-            //  mapPointCloud.save(outputFileNameIter.str());
-
-            //---------------------------------------------------------------------------------------------------//
-
-            // DP data_out(data);
-
-            //std::cout<< "transformPrev.inverse() is "<<std::endl;
-            //std::cout<<transformPrev.inverse()<<std::endl;
-            //  std::cout<< "transformPrev.transpose() is "<<std::endl;
-            // std::cout<<transformPrev.transpose()<<std::endl;
-
-            //  initialEstimate(2,3)=0;
-            //  std::cout<<"initial estimate is "<<std::endl;
-            //  std::cout<<initialEstimate.matrix()<<std::endl;
-
-            //Eigen::Affine3d T;
-
-
-
-            //icp.inspector = vtkInspect;
-            // *rigidTrans=initialEstimate.matrix().cast<float>();
-            // icp.transformations.push_back(rigidTrans);
-
-            //   PM::TransformationParameters correction=PM::TransformationParameters::Identity(4,4);
-            //icp.transformations.apply(data_out, initialEstimate.matrix().cast<float>());
-            //       try {
-            //          const PM::TransformationParameters prior = initialEstimate.matrix().cast<float>();
-            //         correction = icp(data, ref,prior  );
-            //     }
-            //      catch (PM::ConvergenceError& error)
-            //     {
-            //        std::cout << "ERROR PM::ICP failed to converge: " << std::endl;
-            //      std::cout << "   " << error.what() << std::endl;
-            //     continue;
-            // }
 
 
             PM::TransformationParameters T=T_to_map_from_new;
@@ -419,13 +393,16 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
             // Eigen::Matrix4d T= Eigen::Matrix4d::Identity();
             //transformICP.matrix()= transformICP.matrix()*T.cast <double> ();
-            transformICP.matrix()=T.cast <double> ();
+
         }
 
-        icpIncrement=transformPrevIcp.inverse()*transformICP;
+
+
+
+
         //Eigen::Matrix4d pose=transform0.matrix()*pc2base*transformICP.matrix();
 
-        pose.matrix()=transform0.matrix()*pc2base*transformICP.matrix();
+        pose.matrix()=transform0.matrix()*pc2base*T_to_map_from_new.cast <double> ();// transformICP.matrix();
 
 
         Eigen::Matrix3d poseRot=pose.matrix().block(0,0,3,3);
@@ -466,29 +443,9 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
 
 
         }
-        /*
-        for (unsigned int j=0; j<pcContainer.XYZRGBL[i].points.size(); j++){
 
-            double x=pcContainer.XYZRGBL[i].points[j].x; double y=pcContainer.XYZRGBL[i].points[j].y; double z=pcContainer.XYZRGBL[i].points[j].z;
-            Eigen::Vector4d pcPoints(x,y,z,1.0);
-            Eigen::Vector4d pcPointsTransformed=pose.matrix()*pcPoints;
-
-            //  Eigen::Vector4d pcPointsTransformed=transform0.matrix()*pc2base*transformICP.matrix()*pcPoints;
-
-            //transform0*pc2base*
-
-            pcContainer2.XYZRGBL[i].points[j].x=pcPointsTransformed[0]-gpsUTMContainer.vect[0][1];
-            pcContainer2.XYZRGBL[i].points[j].y=pcPointsTransformed[1]-gpsUTMContainer.vect[0][2];
-            pcContainer2.XYZRGBL[i].points[j].z=pcPointsTransformed[2]-gpsUTMContainer.vect[0][3];
-
-
-            pointCloud->points.push_back(pcContainer2.XYZRGBL[i].points[j]);
-
-            timeStream<<t<<std::endl;
-
-        }*/
         transformPrev=transform;
-        transformPrevIcp=transformICP;
+
         transformPrevRot.matrix().block(0,0,3,3)=transform.matrix().block(0,0,3,3);
     }
 
@@ -518,9 +475,6 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
     pcl::io::savePCDFileASCII (fullPath1, *pointCloud);
     pcl::io::savePLYFileASCII (fullPath2, *pointCloud);
 }
-
-
-
 
 
 }
