@@ -327,7 +327,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                     //const TP prior = initialEstimate.matrix().cast<float>();
                     //const TP prior = T_to_map_from_new;
 
-                    const TP prior = T_to_map_from_new0*initialEstimate.matrix().cast<float>();
+                    const TP prior = T_to_map_from_new*initialEstimate.matrix().cast<float>();
 
                     T_to_map_from_new = icp(newCloud, mapPointCloud, prior);
 
@@ -343,7 +343,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 //std::cout<<"before correction "<<std::endl;
                 //std::cout<<T_to_map_from_new<<std::endl;
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
-                T_to_map_from_new0=T_to_map_from_new;
+               // T_to_map_from_new0=T_to_map_from_new;
                 transformICP.matrix()=T_to_map_from_new.cast <double> ();
 
                 icpIncrement=transformPrevIcp.inverse()*transformICP;
