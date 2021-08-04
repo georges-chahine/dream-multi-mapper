@@ -843,7 +843,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
 
 
 
-
+    IcpLogger icpLog;
     if (autoGenerateMaps){
         bool firstLoopFlag=false;
         if (closeLoopFlag){
@@ -855,7 +855,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         std::string selection;
         double prevStamp=0;
         for (int i=0; i<travelledDistance.size(); i++){
-            IcpLogger icpLog;
+
             totalDist=travelledDistance[i][2]+totalDist;
 
             if (debug){
@@ -1263,7 +1263,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         {
 
             GPS* Gps =new GPS();
-            IcpLogger icpLog;
+
             while (true)
             {
 
