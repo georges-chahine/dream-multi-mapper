@@ -289,7 +289,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
             bool foundPrevIcp=false;
             if (icpLog.stamps.size()>0){
                 std::cout<< "found icp logs"<<std::endl;
-                if (icpLog.stamps.back()>=pcContainer.timestamp[i]){
+                if (icpLog.stamps.back()>=pcContainer.timestamp[i]     &&  (      icpLog.stamps[0]<pcContainer.timestamp[i]  ||     icpLog.stamps[0]>  icpLog.stamps.back()       ) ){
                     foundPrevIcp=true;
                     std::cout<< "found previously calculated ICP increment"<<std::endl;
                 }
@@ -320,7 +320,7 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 //std::cout<<"before correction "<<std::endl;
                 //std::cout<<T_to_map_from_new<<std::endl;
                 T_to_map_from_new = rigidTrans->correctParameters(T_to_map_from_new);
-               // T_to_map_from_new0=T_to_map_from_new;
+                // T_to_map_from_new0=T_to_map_from_new;
 
                 icpIncrement.matrix()=transformPrevIcp.matrix().inverse()*T_to_map_from_new.cast<double>();
 
@@ -328,11 +328,12 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                 icpLog.stamps.push_back(pcContainer.timestamp[i]);
 
 
-               //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
+                //T_to_map_from_new=icpIncrementCum.matrix().cast<float>() *T_to_map_from_new;
 
             }
 
             else{
+                bool foundIncrement=false;
                 for (int k=0; k<icpLog.increments.size(); k++){
 
                     if (icpLog.stamps[k]==pcContainer.timestamp[i]){
@@ -340,9 +341,14 @@ void ICP::createMap(std::string currentPath,Eigen::Matrix4d imu2base,Eigen::Matr
                         icpIncrement=icpLog.increments[k];
                         icpIncrementCum=icpIncrementCum*icpIncrement;
                         T_to_map_from_new=icpIncrementCum.matrix().cast<float>();
+                        foundIncrement=true;
                         break;
 
                     }
+
+                }
+                if (!foundIncrement){
+                    std::cout<<"FATAL: Couldn't find previous increment, recheck timestamps"<<std::endl;
                 }
             }
             transformPrevIcp.matrix()=T_to_map_from_new.cast<double>();
