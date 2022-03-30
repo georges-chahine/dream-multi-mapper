@@ -28,7 +28,6 @@ int main()
     std::string tfTopic = config["tfTopic"].as<std::string>();
     std::string radiusStr = config["radius"].as<std::string>();
     std::string pathOut = config["pathOut"].as<std::string>();
-    std::string rMethod = config["mapRegistration"].as<std::string>();
     std::string imuTopic = config["imuTopic"].as<std::string>();
     std::string ptCloudTopic = config["ptCloudTopic"].as<std::string>();
     std::string leafSize0 = config["voxelSize"].as<std::string>();
@@ -58,11 +57,11 @@ int main()
         RTK=true;
     }
     std::string walkingStr = config["autoWalkingMode"].as<std::string>();
-    bool walkingMode=false;
-    if (walkingStr=="True" || walkingStr=="true")
-    {
-        walkingMode=true;
-    }
+      bool walkingMode=false;
+      if (walkingStr=="True" || walkingStr=="true")
+      {
+          walkingMode=true;
+      }
 
     std::string autoMapstr = config["autoGenerateMaps"].as<std::string>();
     bool autoGenerateMaps=false;
@@ -144,7 +143,7 @@ int main()
         std::cout<<currentPath<<std::endl;
         dir=mkdir (currentPath.c_str(),S_IRWXU);
         IO* Io =new IO();
-        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, rMethod, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
+        Io ->readBags(sourceBags[i], currentPath, topics, autoGenerateMaps, autoDist,  lat, lon, radius, base_link, mapCounter, semantics, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, closeLoopFlag, walkingMode);
         delete Io;
     }
 

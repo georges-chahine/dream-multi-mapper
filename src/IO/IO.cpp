@@ -69,7 +69,7 @@ std::vector<std::vector<double>> IO::localDataFilterAuto(Datacontainer& gpsData,
         //    std::cout<<"distance is"<<distance<<std::endl;
         //    std::cout<<"radius is"<<radius<<std::endl;
         //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
-        if (distance<(radius*2)){
+        if (distance<(radius)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
             distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
@@ -119,7 +119,7 @@ std::vector<std::vector<double>> IO::localDataFilter(Datacontainer& gpsData, std
         //    std::cout<<"distance is"<<distance<<std::endl;
         //    std::cout<<"radius is"<<radius<<std::endl;
         //      std::cout<<"GPS TIME IS "<<gpsData.vect[i][0]<<" distance is "<<distance<<" radius*2 is "<<radius*2<<std::endl;
-        if (distance<(radius*2)){
+        if (distance<(radius)){
             //     std::cout<<"distance2 is"<<distance<<std::endl;
             //    std::cout<<"radius2 is"<<radius<<std::endl;
             distanceDifferential=sqrt(pow(x_0-x,2)+pow(y_0-y,2));
@@ -474,7 +474,7 @@ std::uint32_t IO::checkPointLabel(int& r, int& g, int& b)
     //return 0;
 }
 
-void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, std::string rMethod , int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool closeLoopFlag, bool walkingMode)
+void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<std::string> topics, bool autoGenerateMaps, float autoDist, double lat, double lon, double radius, std::string base_link, int mapNumber, bool semantics, float leafSize, std::string icpConfigFilePath, std::string inputFiltersConfigFilePath, std::string inputFilters2ConfigFilePath, std::string mapPostFiltersConfigFilePath, bool computeProbDynamic, bool closeLoopFlag, bool walkingMode)
 {
     stringvec v;
     read_directory(sourceBags, v);
@@ -797,7 +797,7 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
         gpsUTMContainer.vect[i][2]=utm_pt.easting;
         gpsUTMContainer.vect[i][3]=- utm_pt.altitude; //UTM-NED
 
-        if (walkingMode&&i>0){   //cap velocity to human walking velocity with some flexibility
+        if (walkingMode&&i>0){   //cap velocity to human walking velocity with some flexibility. Reduces a bit the effect of gps errors in determining the distance traveled.
             double elapsedT=gpsUTMContainer.vect[i][0]-gpsUTMContainer.vect[i-1][0];
             double maxDisp=elapsedT*humanSpeed;
             if (    (gpsUTMContainer.vect[i][1]-gpsUTMContainer.vect[i-1][1])>maxDisp   ){gpsUTMContainer.vect[i][1]=gpsUTMContainer.vect[i-1][1]+maxDisp;}
@@ -1065,62 +1065,61 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 std::cout<<std::endl;
             }
     */
-                if (rMethod=="gps")
-                {
-
-                    GPS* Gps =new GPS();
-
-                    std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
-
-                    std::cout<<std::endl;
-
-                    std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
-
-                    std::cout<<std::endl;
-
-                    std::cout<<"choose from: gps_local rtk_local icp_local semantic_icp all exit"<<std::endl;
-
-                    std::cout<<std::endl;
-
-                    std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
 
 
-                    while (selection.empty() ||( selection!="exit" && selection !="semantic_icp") ){
-                        std::cout<<"Selection:"<<std::endl;
-                        std::cin >> selection;
-                    }
+                GPS* Gps =new GPS();
+
+                std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"choose from: gps_local rtk_local icp_local semantic_icp all exit"<<std::endl;
+
+                std::cout<<std::endl;
+
+                std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
 
 
-                    std::string exportName=selection + "_" + std::to_string(localCounter) ;
-                    if(firstLoopFlag){exportName=selection + "_lc"; localCounter--;}
-                    localCounter++;
-                    std::cout<<std::endl;
-
-                    if (selection=="gps_local" || selection=="all" ){
-                        Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize );
-                    }
-                    if (selection=="rtk_local" || selection=="all" ){
-                        Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, exportName, leafSize );
-                    }
-                    if (selection=="icp_local" || selection=="all" ){
-                        ICP* Icp =new ICP();
-                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
-                        delete Icp;
-                    }
-                    if (selection=="semantic_icp" || selection=="all" ){
-                        ICP* Icp =new ICP();
-                        Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath,  inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
-                        delete Icp;
-
-                    }
-                    if  (selection=="exit" || selection=="all" ){break;}
+                while (selection.empty() ||( selection!="exit" && selection !="semantic_icp" && selection !="icp_local") ){
+                    std::cout<<"Selection:"<<std::endl;
+                    std::cin >> selection;
+                }
 
 
+                std::string exportName=selection + "_" + std::to_string(localCounter) ;
+                if(firstLoopFlag){exportName=selection + "_lc"; localCounter--;}
+                localCounter++;
+                std::cout<<std::endl;
 
-
-                    delete Gps;
+                if (selection=="gps_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize );
+                }
+                if (selection=="rtk_local" || selection=="all" ){
+                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, exportName, leafSize );
+                }
+                if (selection=="icp_local" || selection=="all" ){
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
+                    delete Icp;
+                }
+                if (selection=="semantic_icp" || selection=="all" ){
+                    ICP* Icp =new ICP();
+                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, exportName, leafSize, icpConfigFilePath, inputFiltersConfigFilePath,  inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
+                    delete Icp;
 
                 }
+                if  (selection=="exit" || selection=="all" ){break;}
+
+
+
+
+                delete Gps;
+
+
                 if (loop_count==1 || firstLoopFlag==false){break;}
                 firstLoopFlag=false;
                 loop_count++;
@@ -1259,73 +1258,72 @@ void IO::readBags(std::string sourceBags, std::string currentPath, std::vector<s
                 std::cout<<std::endl;
             }
     */
-        if (rMethod=="gps")
+
+
+        GPS* Gps =new GPS();
+
+        while (true)
         {
 
-            GPS* Gps =new GPS();
+            std::string selection;
+            std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
 
-            while (true)
-            {
+            std::cout<<std::endl;
 
-                std::string selection;
-                std::cout<< "What map do you want to save?  Maps will be created for every survey and stored in the path specified in config.yaml"<<std::endl;
+            std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
 
-                std::cout<<std::endl;
+            std::cout<<std::endl;
 
-                std::cout<< "THIS IS SURVEY #"<<mapNumber<<std::endl;
+            std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_icp all exit"<<std::endl;
 
-                std::cout<<std::endl;
+            std::cout<<std::endl;
 
-                std::cout<<"choose from: gps_local gps_global rtk_local rtk_global icp_local semantic_icp all exit"<<std::endl;
+            std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
 
-                std::cout<<std::endl;
+            std::cout<<"Selection:"<<std::endl;
+            std::cin >> selection;
 
-                std::cout<<"REMARK: When finished, type exit to process next survey"<<std::endl;
+            std::cout<<std::endl;
 
-                std::cout<<"Selection:"<<std::endl;
-                std::cin >> selection;
-
-                std::cout<<std::endl;
-
-                if  (selection=="gps_global" || selection=="all" ){
-                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
-                }
-
-                if (selection=="gps_local" || selection=="all" ){
-                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "gps_local", leafSize );
-                }
-
-                if  (selection=="rtk_global" || selection=="all" ){
-                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", 2*leafSize );
-                }
-
-                if (selection=="rtk_local" || selection=="all" ){
-                    Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
-                }
-
-                if (selection=="icp_local" || selection=="all" ){
-                    ICP* Icp =new ICP();
-                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
-                    delete Icp;
-                }
-
-
-
-                if (selection=="semantic_icp" || selection=="all" ){
-
-                    ICP* Icp =new ICP();
-                    Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
-                    delete Icp;
-
-                }
-                if  (selection=="exit" || selection=="all" ){break;}
-
-
+            if  (selection=="gps_global" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, gpsUTMContainerMatched, "gps_global", 2*leafSize );
             }
 
-            delete Gps;
+            if (selection=="gps_local" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "gps_local", leafSize );
+            }
+
+            if  (selection=="rtk_global" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuContainerMatched, pcContainer, rtkUTMContainerMatched, "rtk_global", 2*leafSize );
+            }
+
+            if (selection=="rtk_local" || selection=="all" ){
+                Gps->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, rtkLocalUTMContainerMatched, "rtk_local", leafSize );
+            }
+
+            if (selection=="icp_local" || selection=="all" ){
+                ICP* Icp =new ICP();
+                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, false);
+                delete Icp;
+            }
+
+
+
+            if (selection=="semantic_icp" || selection=="all" ){
+
+                ICP* Icp =new ICP();
+                Icp->createMap(currentPath, imu2base, pc2base, gps2base, imuLocalContainerMatched, pcLocalContainer, gpsLocalUTMContainerMatched, "icp_local_semantics", leafSize, icpConfigFilePath, inputFiltersConfigFilePath, inputFilters2ConfigFilePath, mapPostFiltersConfigFilePath, computeProbDynamic, icpLog, semantics);
+                delete Icp;
+
+            }
+            if  (selection=="exit" || selection=="all" ){break;}
+
 
         }
+
+        delete Gps;
+
+
 
 
 
